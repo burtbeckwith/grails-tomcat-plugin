@@ -29,7 +29,7 @@ class TomcatServer implements EmbeddableServer {
 		context = tomcat.addWebapp(contextPath, basedir)
 		// we handle reloading manually
 		context.reloadable = false
-		context.setAliases("/WEB-INF/web.xml=${buildSettings.projectWorkDir}/resources/WEB-INF")
+//		context.setAliases("/WEB-INF=${buildSettings.projectWorkDir}/resources/WEB-INF")
 				
 		TomcatLoader loader = new TomcatLoader(classLoader)
 		
