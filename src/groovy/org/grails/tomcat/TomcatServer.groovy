@@ -10,6 +10,7 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.catalina.connector.Connector
 import org.apache.catalina.*
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils as GPU
 
 class TomcatServer implements EmbeddableServer {
 
@@ -23,13 +24,25 @@ class TomcatServer implements EmbeddableServer {
 	
 	TomcatServer(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
 		tomcat = new Tomcat()
-        this.buildSettings = BuildSettingsHolder.getSettings()		
+        this.buildSettings = BuildSettingsHolder.getSettings()	
+
+		if(contextPath=='/') contextPath = ''
 
 		tomcat.basedir = buildSettings.projectWorkDir
 		context = tomcat.addWebapp(contextPath, basedir)
 		// we handle reloading manually
 		context.reloadable = false
-//		context.setAliases("/WEB-INF=${buildSettings.projectWorkDir}/resources/WEB-INF")
+		context.setAltDDName("${buildSettings.projectWorkDir}/resources/web.xml")
+		def pluginDirectories = GPU.getPluginDirectories()		
+		def aliases = []
+		for(dir in pluginDirectories) {
+			def webappDir = dir.createRelative('web-app')
+			if(webappDir.exists())
+				aliases << "/plugins/${dir.filename}=${webappDir.file.absolutePath}"
+		}
+		aliases.each { println it }
+		if(aliases)
+			context.setAliases(aliases.join(','))
 				
 		TomcatLoader loader = new TomcatLoader(classLoader)
 		
@@ -41,10 +54,14 @@ class TomcatServer implements EmbeddableServer {
 	
 	TomcatServer(String warPath, String contextPath) {
 		tomcat = new Tomcat()
+		if(contextPath=='/') contextPath = ''
+				
         this.buildSettings = BuildSettingsHolder.getSettings()
-		
+				
 		tomcat.basedir = buildSettings.projectWorkDir		
+		tomcat.getHost().setUnpackWARs(false)						
 		context = tomcat.addWebapp(contextPath, warPath)		
+		
 
 		def rootLoader = getClass().classLoader.rootLoader
 		def classLoader = new URLClassLoader([buildSettings.classesDir.toURL()] as URL[], rootLoader)
