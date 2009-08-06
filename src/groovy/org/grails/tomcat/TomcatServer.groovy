@@ -36,10 +36,12 @@ class TomcatServer implements EmbeddableServer {
 		def pluginDirectories = GPU.getPluginDirectories()		
 		def aliases = []
 		for(dir in pluginDirectories) {
-			def webappDir = dir.createRelative('web-app')
+			def webappDir = new File("${dir.file.absolutePath}/web-app")
 			if(webappDir.exists())
-				aliases << "/plugins/${dir.filename}=${webappDir.file.absolutePath}"
+				aliases << "/plugins/${dir.filename}=${webappDir.absolutePath}"
 		}
+		println "ALIASES ARE:"
+		aliases.each { println it }
 		if(aliases)
 			context.setAliases(aliases.join(','))
 				
