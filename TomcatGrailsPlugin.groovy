@@ -14,20 +14,17 @@
  */
 class TomcatGrailsPlugin {
     // the plugin version
-    def version = "1.2-SNAPSHOT"
+    def version = "1.2-M2"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.1 > *"
-	// don't package in WAR
-	def scope = ["dev"]
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
             "grails-app/views/error.gsp",
-			"grails-app/domain/*.groovy",
-			"grails-app/controllers/*.groovy"			
-			
+	    "grails-app/domain/*.groovy",
+	    "grails-app/controllers/*.groovy"		
     ]
-	// don't package in war
-	def scopes = [excludes:'war']
+    // don't package in war
+    def scopes = [excludes:'war']
 	
     def author = "Graeme Rocher"
     def authorEmail = "graeme.rocher@springsource.com"
