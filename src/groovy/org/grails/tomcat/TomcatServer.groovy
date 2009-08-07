@@ -40,8 +40,6 @@ class TomcatServer implements EmbeddableServer {
 			if(webappDir.exists())
 				aliases << "/plugins/${dir.filename}=${webappDir.absolutePath}"
 		}
-		println "ALIASES ARE:"
-		aliases.each { println it }
 		if(aliases)
 			context.setAliases(aliases.join(','))
 				
