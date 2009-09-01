@@ -56,18 +56,12 @@ class TomcatServer implements EmbeddableServer {
 		if(contextPath=='/') contextPath = ''
 				
         this.buildSettings = BuildSettingsHolder.getSettings()
-				
+
 		tomcat.basedir = buildSettings.projectWorkDir		
 		tomcat.getHost().setUnpackWARs(false)						
 		context = tomcat.addWebapp(contextPath, warPath)		
-		
-
-		def rootLoader = getClass().classLoader.rootLoader
-		def classLoader = new URLClassLoader([buildSettings.classesDir.toURL()] as URL[], rootLoader)
-		TomcatLoader loader = new TomcatLoader(classLoader)
-		loader.container = context
-		context.loader = loader
-		
+		context.setParentClassLoader(getClass().classLoader.rootLoader)		
+				
 		initialize()
 	}
 	
