@@ -11,11 +11,14 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.catalina.connector.Connector
 import org.apache.catalina.*
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils as GPU
+import org.apache.catalina.deploy.ContextEnvironment
 
 class TomcatServer implements EmbeddableServer {
 
 	Tomcat tomcat
 	StandardContext context
+	def eventListener
+	def grailsConfig
 	
     protected String keystore
     protected File keystoreFile
@@ -28,8 +31,10 @@ class TomcatServer implements EmbeddableServer {
 
 		if(contextPath=='/') contextPath = ''
 
-		tomcat.basedir = buildSettings.projectWorkDir
+		tomcat.basedir = buildSettings.projectWorkDir		
 		context = tomcat.addWebapp(contextPath, basedir)
+		tomcat.enableNaming()		
+		
 		// we handle reloading manually
 		context.reloadable = false
 		context.setAltDDName("${buildSettings.projectWorkDir}/resources/web.xml")
@@ -58,7 +63,8 @@ class TomcatServer implements EmbeddableServer {
         this.buildSettings = BuildSettingsHolder.getSettings()
 
 		tomcat.basedir = buildSettings.projectWorkDir		
-		tomcat.getHost().setUnpackWARs(false)						
+		tomcat.getHost().setUnpackWARs(false)	
+		tomcat.enableNaming()					
 		context = tomcat.addWebapp(contextPath, warPath)		
 		context.setParentClassLoader(getClass().classLoader.rootLoader)		
 				
@@ -96,9 +102,29 @@ class TomcatServer implements EmbeddableServer {
      * @param port The port number
      */
     void start(String host, int port) {
+		preStart()
 		tomcat.hostname = host
 		tomcat.port = port
 		tomcat.start()
+	}
+	
+	private preStart() {
+        eventListener?.event("ConfigureTomcat", [tomcat])	
+		def jndiEntries = grailsConfig?.grails?.naming?.entries
+		
+		if(jndiEntries instanceof Map) {
+			jndiEntries.each { key, value ->
+				if(value) {
+					def environment = new ContextEnvironment()
+					environment.type = value.class.name
+					environment.name = key
+					environment.value = value
+
+					context.namingResources.addEnvironment environment					
+				}				
+			}			
+		}
+		
 	}
 
     /**
@@ -122,7 +148,8 @@ class TomcatServer implements EmbeddableServer {
      * @param httpPort The port for HTTP traffic.
      * @param httpsPort The port for HTTPS traffic.
      */
-    void startSecure(String host, int httpPort, int httpsPort) {		
+    void startSecure(String host, int httpPort, int httpsPort) {	
+		preStart()
 		tomcat.hostname = host
 		tomcat.port = httpPort
 		def sslConnector = new Connector()
