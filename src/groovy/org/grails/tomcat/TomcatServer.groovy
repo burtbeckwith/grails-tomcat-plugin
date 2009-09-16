@@ -62,8 +62,10 @@ class TomcatServer implements EmbeddableServer {
 				
         this.buildSettings = BuildSettingsHolder.getSettings()
 
-		tomcat.basedir = buildSettings.projectWorkDir		
-		tomcat.getHost().setUnpackWARs(false)	
+		def workDir = buildSettings.projectWorkDir
+		tomcat.basedir = workDir		
+		new AntBuilder().delete(dir:"${workDir}/Tomcat", failonerror:false)
+		tomcat.getHost().setUnpackWARs(true)	
 		tomcat.enableNaming()					
 		context = tomcat.addWebapp(contextPath, warPath)		
 		context.setParentClassLoader(getClass().classLoader.rootLoader)		
