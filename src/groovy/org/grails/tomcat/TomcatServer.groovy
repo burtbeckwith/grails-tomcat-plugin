@@ -12,6 +12,7 @@ import org.apache.catalina.connector.Connector
 import org.apache.catalina.*
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils as GPU
 import org.apache.catalina.deploy.ContextEnvironment
+import org.apache.catalina.deploy.ContextResource
 
 class TomcatServer implements EmbeddableServer {
 
@@ -64,7 +65,13 @@ class TomcatServer implements EmbeddableServer {
 
 		def workDir = buildSettings.projectWorkDir
 		tomcat.basedir = workDir		
-		new AntBuilder().delete(dir:"${workDir}/Tomcat", failonerror:false)
+		def ant = new AntBuilder()
+		ant.delete(dir:"${workDir}/Tomcat", failonerror:false)
+		def expWarDir = new File("${workDir.absolutePath}/${workDir.name}")
+		if(expWarDir.exists()) {
+			ant.delete(dir:expWarDir)					
+		}
+		ant.delete(dir:"${workDir}/Tomcat", failonerror:false)		
 		tomcat.getHost().setUnpackWARs(true)	
 		tomcat.enableNaming()					
 		context = tomcat.addWebapp(contextPath, warPath)		
@@ -117,12 +124,15 @@ class TomcatServer implements EmbeddableServer {
 		if(jndiEntries instanceof Map) {
 			jndiEntries.each { key, value ->
 				if(value) {
-					def environment = new ContextEnvironment()
-					environment.type = value.class.name
-					environment.name = key
-					environment.value = value
-
-					context.namingResources.addEnvironment environment					
+					def res = new ContextResource()
+					if(value instanceof javax.sql.DataSource) {
+						res.type = "javax.sql.DataSource"
+					}
+					else {
+						res.type = value.class.name						
+					}
+					res.name = key
+					context.namingResources.addResource res					
 				}				
 			}			
 		}
