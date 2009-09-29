@@ -32,7 +32,7 @@ class TomcatServer implements EmbeddableServer {
 
 		if(contextPath=='/') contextPath = ''
 
-		tomcat.basedir = "${buildSettings.projectWorkDir}/Tomcat"		
+		tomcat.basedir = "${buildSettings.projectWorkDir}/tomcat"		
 		context = tomcat.addWebapp(contextPath, basedir)
 		tomcat.enableNaming()		
 		
@@ -61,18 +61,20 @@ class TomcatServer implements EmbeddableServer {
         this.buildSettings = BuildSettingsHolder.getSettings()
 		def workDir = buildSettings.projectWorkDir
 		def ant = new AntBuilder()
-		ant.delete(dir:"${workDir}/Tomcat", failonerror:false)		
-		
+		def tomcatDir = new File("${workDir}/tomcat").absolutePath
+		def warDir = new File("${workDir}/war").absolutePath
+		ant.delete(dir:tomcatDir, failonerror:false)		
+		ant.delete(dir:warDir, failonerror:false)				
+		ant.unzip(src:warPath, dest:warDir)
 		tomcat = new Tomcat()
 		if(contextPath=='/') contextPath = ''
-				
 
-		tomcat.basedir = "$workDir/Tomcat"		
-		tomcat.getHost().setUnpackWARs(true)	
+		tomcat.basedir = tomcatDir
+		
+		context = tomcat.addWebapp(contextPath, warDir)						
+		context.setParentClassLoader(getClass().classLoader.rootLoader)				
 		tomcat.enableNaming()					
-		context = tomcat.addWebapp(contextPath, warPath)		
-		context.setParentClassLoader(getClass().classLoader.rootLoader)		
-				
+
 		initialize()
 	}
 	
