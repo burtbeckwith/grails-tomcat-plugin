@@ -2,6 +2,7 @@ package org.grails.tomcat
 
 import grails.web.container.*
 import grails.util.BuildSettingsHolder
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.apache.catalina.*
 import org.apache.catalina.startup.*
 import org.apache.catalina.core.StandardContext
@@ -39,13 +40,20 @@ class TomcatServer implements EmbeddableServer {
 		// we handle reloading manually
 		context.reloadable = false
 		context.setAltDDName("${buildSettings.projectWorkDir}/resources/web.xml")
-		def pluginDirectories = GPU.getPluginDirectories()		
+
 		def aliases = []
-		for(dir in pluginDirectories) {
-			def webappDir = new File("${dir.file.absolutePath}/web-app")
-			if(webappDir.exists())
-				aliases << "/plugins/${dir.filename}=${webappDir.absolutePath}"
+		def pluginManager = PluginManagerHolder.getPluginManager()
+		def pluginSettings = GPU.getPluginBuildSettings()
+		if(pluginManager!=null) {
+			for(plugin in pluginManager.userPlugins) {
+				  def dir = pluginSettings.getPluginDirForName(plugin.name)
+				  def webappDir = dir ? new File("${dir.file.absolutePath}/web-app") : null
+				  if (webappDir?.exists())
+				        aliases << "/plugins/${plugin.name}-${plugin.version}=${webappDir.absolutePath}"
+				
+			}
 		}
+
 		if(aliases)
 			context.setAliases(aliases.join(','))
 				
