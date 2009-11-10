@@ -14,6 +14,7 @@ import org.apache.catalina.*
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils as GPU
 import org.apache.catalina.deploy.ContextEnvironment
 import org.apache.catalina.deploy.ContextResource
+import sun.security.tools.KeyTool
 
 class TomcatServer implements EmbeddableServer {
 
@@ -170,6 +171,10 @@ class TomcatServer implements EmbeddableServer {
 		preStart()
 		tomcat.hostname = host
 		tomcat.port = httpPort
+        if (!(keystoreFile.exists())) {
+            createSSLCertificate()
+        }
+		
 		def sslConnector = new Connector()
 		sslConnector.scheme = "https"
 		sslConnector.secure = true
