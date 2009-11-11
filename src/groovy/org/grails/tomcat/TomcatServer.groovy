@@ -11,6 +11,7 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.catalina.connector.Connector
 import org.apache.catalina.*
+import grails.util.*
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils as GPU
 import org.apache.catalina.deploy.ContextEnvironment
 import org.apache.catalina.deploy.ContextResource
@@ -47,17 +48,17 @@ class TomcatServer implements EmbeddableServer {
 		def pluginSettings = GPU.getPluginBuildSettings()
 		if(pluginManager!=null) {
 			for(plugin in pluginManager.userPlugins) {
-				  def dir = pluginSettings.getPluginDirForName(plugin.name)
+				  def dir = pluginSettings.getPluginDirForName(GrailsNameUtils.getScriptName(plugin.name))
 				  def webappDir = dir ? new File("${dir.file.absolutePath}/web-app") : null
 				  if (webappDir?.exists())
-				        aliases << "/plugins/${plugin.name}-${plugin.version}=${webappDir.absolutePath}"
+				        aliases << "/plugins/${plugin.fileSystemName}=${webappDir.absolutePath}"
 				
 			}
 		}
 
-		if(aliases)
+		if(aliases) {
 			context.setAliases(aliases.join(','))
-				
+		}
 		TomcatLoader loader = new TomcatLoader(classLoader)
 		
 		loader.container = context
