@@ -122,6 +122,7 @@ class TomcatServer implements EmbeddableServer {
 		preStart()
 		tomcat.hostname = host
 		tomcat.port = port
+		tomcat.connector.URIEncoding = 'UTF-8'
 		tomcat.start()
 	}
 	
@@ -172,6 +173,7 @@ class TomcatServer implements EmbeddableServer {
 		preStart()
 		tomcat.hostname = host
 		tomcat.port = httpPort
+		tomcat.connector.URIEncoding = 'UTF-8'
         if (!(keystoreFile.exists())) {
             createSSLCertificate()
         }
@@ -183,6 +185,7 @@ class TomcatServer implements EmbeddableServer {
 		sslConnector.setProperty("SSLEnabled","true")
 		sslConnector.setAttribute("keystore", keystore)
 		sslConnector.setAttribute("keystorePass", keyPassword)
+		sslConnector.URIEncoding = 'UTF-8'
 		tomcat.service.addConnector sslConnector
 		tomcat.start()
 	}
