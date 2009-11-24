@@ -35,7 +35,11 @@ class TomcatServer implements EmbeddableServer {
 
 		if(contextPath=='/') contextPath = ''
 
-		tomcat.basedir = "${buildSettings.projectWorkDir}/tomcat"		
+		def tomcatDir = new File("${buildSettings.projectWorkDir}/tomcat").absolutePath
+		def ant = new AntBuilder()		
+		ant.delete(dir:tomcatDir, failonerror:false)		
+		
+		tomcat.basedir = tomcatDir
 		context = tomcat.addWebapp(contextPath, basedir)
 		tomcat.enableNaming()		
 		
