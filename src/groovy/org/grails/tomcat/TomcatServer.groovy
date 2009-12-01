@@ -16,6 +16,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils as GPU
 import org.apache.catalina.deploy.ContextEnvironment
 import org.apache.catalina.deploy.ContextResource
 import sun.security.tools.KeyTool
+import org.apache.naming.resources.DirContextURLStreamHandlerFactory
+import org.apache.naming.resources.DirContextURLStreamHandler
 
 class TomcatServer implements EmbeddableServer {
 
@@ -235,6 +237,8 @@ class TomcatServer implements EmbeddableServer {
 class TomcatLoader implements Loader, Lifecycle {
 
     private static Log log = LogFactory.getLog(TomcatLoader.class.getName())
+
+    private static boolean first = true;
     
     ClassLoader classLoader
     Container container
@@ -275,7 +279,29 @@ class TomcatLoader implements Loader, Lifecycle {
         log.warn "Call to removeLifecycleListener(${listener}) was ignored."	
     }
 
-    void start()  {}
+    void start()  {
+
+      URLStreamHandlerFactory streamHandlerFactory =
+	 	 	            new DirContextURLStreamHandlerFactory();
+
+      if (first) {
+          first = false;
+          try {
+              URL.setURLStreamHandlerFactory(streamHandlerFactory);
+          } catch (Exception e) {
+              // Log and continue anyway, this is not critical
+              log.error("Error registering jndi stream handler", e);
+          } catch (Throwable t) {
+              // This is likely a dual registration
+              log.info("Dual registration of jndi stream handler: "
+                       + t.getMessage());
+          }
+      }
+
+       DirContextURLStreamHandler.bind(classLoader,
+        	 	 	              this.container.getResources());
+      
+    }
 
     void stop()  {
         classLoader = null
