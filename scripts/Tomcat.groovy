@@ -1,8 +1,12 @@
+scriptScope=grails.util.BuildScope.WAR
+
 includeTargets << grailsScript("_GrailsWar" )
 	
 ant.taskdef(name:"deploy",classname:"org.apache.catalina.ant.DeployTask")
 ant.taskdef(name:"list",classname:"org.apache.catalina.ant.ListTask")
 ant.taskdef(name:"undeploy",classname:"org.apache.catalina.ant.UndeployTask")
+
+
 
 target(main: '''\
 Script used to interact with remote Tomcat. The following subcommands are available:
