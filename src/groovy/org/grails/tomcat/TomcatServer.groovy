@@ -108,7 +108,7 @@ class TomcatServer implements EmbeddableServer {
      * Starts the container on the default port
      */
     void start() {
-		start("localhost", 8080)
+		start(null, 8080)
 	}
 
     /**
@@ -116,7 +116,7 @@ class TomcatServer implements EmbeddableServer {
      * @param port The port number
      */
     void start(int port) {
-		start("localhost", port)
+		start(null, port)
 	}
 
     /**
@@ -126,8 +126,11 @@ class TomcatServer implements EmbeddableServer {
      */
     void start(String host, int port) {
 		preStart()
-		tomcat.hostname = host
 		tomcat.port = port
+		if(host) {
+			tomcat.connector.setAttribute("address", host)
+		}
+			
 		tomcat.connector.URIEncoding = 'UTF-8'
 		tomcat.start()
 	}
