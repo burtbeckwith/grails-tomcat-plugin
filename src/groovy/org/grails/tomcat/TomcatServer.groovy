@@ -249,7 +249,7 @@ class TomcatLoader implements Loader, Lifecycle {
     boolean reloadable
 
 	TomcatLoader(ClassLoader classLoader) {
-		this.classLoader = classLoader
+		this.classLoader = new ParentDelegatingClassLoader(classLoader)
 	}
 
     void addPropertyChangeListener(PropertyChangeListener listener) {}
@@ -310,4 +310,13 @@ class TomcatLoader implements Loader, Lifecycle {
         classLoader = null
     }
 
+}
+class ParentDelegatingClassLoader extends ClassLoader {
+	ParentDelegatingClassLoader(ClassLoader parent) {
+		super(parent)
+	}
+	
+	Class findClass(String name) {
+		parent.findClass(name)
+	}
 }
