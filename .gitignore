@@ -1,0 +1,4 @@
+grails-tomcat-*.zip
+plugin.xml
+target
+web-app
