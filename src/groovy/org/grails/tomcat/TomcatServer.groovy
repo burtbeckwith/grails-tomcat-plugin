@@ -1,21 +1,23 @@
 package org.grails.tomcat
 
-import grails.web.container.*
-import grails.util.BuildSettingsHolder
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.apache.catalina.*
-import org.apache.catalina.startup.*
-import org.apache.catalina.core.StandardContext
-import java.beans.PropertyChangeListener;
-import org.apache.juli.logging.Log;
-import org.apache.juli.logging.LogFactory;
-import org.apache.catalina.connector.Connector
-import org.apache.catalina.*
-import grails.util.*
+import grails.web.container.EmbeddableServer
+
+import java.beans.PropertyChangeListener
+
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils as GPU
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+
+import org.apache.catalina.Container
+import org.apache.catalina.Lifecycle
+import org.apache.catalina.LifecycleListener
+import org.apache.catalina.Loader
+import org.apache.catalina.connector.Connector
+import org.apache.catalina.core.StandardContext
 import org.apache.catalina.deploy.ContextEnvironment
 import org.apache.catalina.deploy.ContextResource
-import sun.security.tools.KeyTool
+import org.apache.catalina.startup.Tomcat
+import org.apache.juli.logging.Log
+import org.apache.juli.logging.LogFactory
 import org.apache.naming.resources.DirContextURLStreamHandlerFactory
 import org.apache.naming.resources.DirContextURLStreamHandler
 
@@ -58,9 +60,8 @@ class TomcatServer implements EmbeddableServer {
 				  def webappDir = dir ? new File("${dir.file.absolutePath}/web-app") : null
 				  if (webappDir?.exists())
 				        aliases << "/plugins/${plugin.fileSystemName}=${webappDir.absolutePath}"
-				
-			}
-		}
+            }
+        }
 
 		if(aliases) {
 			context.setAliases(aliases.join(','))
@@ -96,9 +97,8 @@ class TomcatServer implements EmbeddableServer {
 	
     protected initialize() {
 
-
         keystore = "${buildSettings.grailsWorkDir}/ssl/keystore"
-        keystoreFile = new File("${keystore}")
+        keystoreFile = new File(keystore)
         keyPassword = "123456"
 
         System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
@@ -154,8 +154,7 @@ class TomcatServer implements EmbeddableServer {
 				}				
 			}			
 		}
-		
-	}
+    }
 
     /**
      * Starts a secure container running over HTTPS
@@ -212,12 +211,19 @@ class TomcatServer implements EmbeddableServer {
         String[] keytoolArgs = ["-genkey", "-alias", "localhost", "-dname",
                 "CN=localhost,OU=Test,O=Test,C=US", "-keyalg", "RSA",
                 "-validity", "365", "-storepass", "key", "-keystore",
-                "${keystore}", "-storepass", "${keyPassword}",
-                "-keypass", "${keyPassword}"]
-        KeyTool.main(keytoolArgs)
+                keystore, "-storepass", keyPassword,
+                "-keypass", keyPassword]
+        Class<?> keyToolClass
+        try {
+            keyToolClass = Class.forName('sun.security.tools.KeyTool')
+        }
+        catch (ClassNotFoundException e) {
+            // no try/catch for this one, if neither is found let it fail
+            keyToolClass = Class.forName('com.ibm.crypto.tools.KeyTool')
+        }
+        keyToolClass.main(keytoolArgs)
         println 'Created SSL Certificate.'
     }	
-
 
     /**
      * Stops the container
@@ -233,16 +239,14 @@ class TomcatServer implements EmbeddableServer {
 		stop()
 		start()
 	}
-
 }
-
 
 class TomcatLoader implements Loader, Lifecycle {
 
-    private static Log log = LogFactory.getLog(TomcatLoader.class.getName())
+    private static Log log = LogFactory.getLog(TomcatLoader.name)
 
-    private static boolean first = true;
-    
+    private static boolean first = true
+
     ClassLoader classLoader
     Container container
     boolean delegate
@@ -284,39 +288,36 @@ class TomcatLoader implements Loader, Lifecycle {
 
     void start()  {
 
-      URLStreamHandlerFactory streamHandlerFactory =
-	 	 	            new DirContextURLStreamHandlerFactory();
+      URLStreamHandlerFactory streamHandlerFactory = new DirContextURLStreamHandlerFactory()
 
       if (first) {
-          first = false;
+          first = false
           try {
-              URL.setURLStreamHandlerFactory(streamHandlerFactory);
+              URL.setURLStreamHandlerFactory(streamHandlerFactory)
           } catch (Exception e) {
               // Log and continue anyway, this is not critical
-              log.error("Error registering jndi stream handler", e);
+              log.error("Error registering jndi stream handler", e)
           } catch (Throwable t) {
               // This is likely a dual registration
               log.info("Dual registration of jndi stream handler: "
-                       + t.getMessage());
+                       + t.getMessage())
           }
       }
 
-       DirContextURLStreamHandler.bind(classLoader,
-        	 	 	              this.container.getResources());
-      
+      DirContextURLStreamHandler.bind(classLoader, container.getResources())
     }
 
     void stop()  {
         classLoader = null
     }
-
 }
+
 class ParentDelegatingClassLoader extends ClassLoader {
 	ParentDelegatingClassLoader(ClassLoader parent) {
 		super(parent)
 	}
 	
-	Class findClass(String name) {
+    Class<?> findClass(String name) {
 		parent.findClass(name)
 	}
 }
