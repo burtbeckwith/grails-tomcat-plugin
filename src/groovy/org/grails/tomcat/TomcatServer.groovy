@@ -140,17 +140,23 @@ class TomcatServer implements EmbeddableServer {
 		def jndiEntries = grailsConfig?.grails?.naming?.entries
 		
 		if(jndiEntries instanceof Map) {
-			jndiEntries.each { key, value ->
-				if(value) {
-					def res = new ContextResource()
-					if(value instanceof javax.sql.DataSource) {
-						res.type = "javax.sql.DataSource"
-					}
-					else {
-						res.type = value.class.name						
-					}
-					res.name = key
-					context.namingResources.addResource res					
+			jndiEntries.each { name, resCfg ->
+				if(resCfg) {
+                    if (!resCfg["type"]) {
+                        throw new IllegalArgumentException("Must supply a resource type for JNDI configuration")
+                    }
+                    def res = new ContextResource()
+                    res.name = name
+                    res.type = resCfg.remove("type")
+                    res.auth = resCfg.remove("auth")
+                    res.description = resCfg.remove("description")
+                    res.scope = resCfg.remove("scope")
+                    // now it's only the custom properties left in the Map...
+                    resCfg.each {key, value ->
+                        res.setProperty (key, value)
+                    }
+
+                    context.namingResources.addResource res
 				}				
 			}			
 		}
