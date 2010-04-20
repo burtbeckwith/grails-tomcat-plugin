@@ -11,10 +11,9 @@ import org.apache.catalina.Container
 import org.apache.catalina.Lifecycle
 import org.apache.catalina.LifecycleListener
 import org.apache.catalina.Loader
-import org.apache.catalina.connector.Connector
 import org.apache.catalina.core.StandardContext
 import org.apache.catalina.deploy.ContextEnvironment
-import org.apache.catalina.deploy.ContextResource
+
 import org.apache.catalina.startup.Tomcat
 import org.apache.juli.logging.Log
 import org.apache.juli.logging.LogFactory
@@ -24,7 +23,8 @@ import org.apache.naming.resources.DirContextURLStreamHandler
 class TomcatServer implements EmbeddableServer {
 
 	Tomcat tomcat
-	StandardContext context
+	def context
+	PluginBuildSettings pluginSettings
 	def eventListener
 	def grailsConfig
 	
@@ -32,6 +32,9 @@ class TomcatServer implements EmbeddableServer {
     protected File keystoreFile
     protected String keyPassword
 	protected buildSettings
+	protected boolean warRun
+	protected warParams = [:]
+    protected ant	                       
 	
 	TomcatServer(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
 		tomcat = new Tomcat()
@@ -77,22 +80,19 @@ class TomcatServer implements EmbeddableServer {
 	TomcatServer(String warPath, String contextPath) {
         this.buildSettings = BuildSettingsHolder.getSettings()
 		def workDir = buildSettings.projectWorkDir
-		def ant = new AntBuilder()
+		ant = new AntBuilder()
 		def tomcatDir = new File("${workDir}/tomcat").absolutePath
 		def warDir = new File("${workDir}/war").absolutePath
 		ant.delete(dir:tomcatDir, failonerror:false)		
 		ant.delete(dir:warDir, failonerror:false)				
 		ant.unzip(src:warPath, dest:warDir)
-		tomcat = new Tomcat()
+
 		if(contextPath=='/') contextPath = ''
 
-		tomcat.basedir = tomcatDir
-		
-		context = tomcat.addWebapp(contextPath, warDir)						
-		context.setParentClassLoader(getClass().classLoader.rootLoader)				
-		tomcat.enableNaming()					
-
-		initialize()
+		warRun = true	
+		warParams.warPath = warDir
+		warParams.contextPath = contextPath
+		warParams.tomcatDir = tomcatDir
 	}
 	
     protected initialize() {
@@ -125,16 +125,49 @@ class TomcatServer implements EmbeddableServer {
      * @param port The port number
      */
     void start(String host, int port) {
-		preStart()
-		tomcat.port = port
-		if(host) {
-			tomcat.connector.setAttribute("address", host)
-		}
-			
-		tomcat.connector.URIEncoding = 'UTF-8'
-		tomcat.start()
+    	if(warRun) {
+    	    host = host ?: 'localhost'
+    		warParams.host = host
+    		warParams.port = port
+    		ant.java(classname:IsolatedTomcat.name, fork:true, failonerror:true) {
+    			classpath {
+    				def pluginSettings = GPU.getPluginBuildSettings()
+    				def pluginDir = pluginSettings.getPluginDirForName("tomcat")
+    				def jars = new File("${pluginDir.file.canonicalPath}/lib").listFiles()
+    				for(jar in jars) {
+    					pathelement location:jar
+    				}
+    			}
+    			arg value:warParams.tomcatDir
+    			arg value:warParams.warPath
+    			arg value:warParams.contextPath
+    			arg value:host
+    			arg value:port
+    			jvmarg value:"-Xmx512m"
+    		}
+    		
+    		Runtime.addShutdownHook {    			
+    			// hit the shutdown port
+    			try {
+    				new URL("http://${host}:${port}").text
+    			}catch(e) {}
+    		}
+    	}
+    	else {
+    		preStart()
+    		tomcat.port = port
+    		if(host) {
+    			tomcat.connector.setAttribute("address", host)
+    		}
+    			
+    		tomcat.connector.URIEncoding = 'UTF-8'
+    		tomcat.start()    		
+    	}
 	}
 	
+	private loadInstance(String name) {
+		tomcat.class.classLoader.loadClass(name).newInstance()
+	}
 	private preStart() {
         eventListener?.event("ConfigureTomcat", [tomcat])	
 		def jndiEntries = grailsConfig?.grails?.naming?.entries
@@ -145,7 +178,7 @@ class TomcatServer implements EmbeddableServer {
                     if (!resCfg["type"]) {
                         throw new IllegalArgumentException("Must supply a resource type for JNDI configuration")
                     }
-                    def res = new ContextResource()
+                    def res = loadInstance('org.apache.catalina.deploy.ContextResource')
                     res.name = name
                     res.type = resCfg.remove("type")
                     res.auth = resCfg.remove("auth")
@@ -192,7 +225,7 @@ class TomcatServer implements EmbeddableServer {
             createSSLCertificate()
         }
 		
-		def sslConnector = new Connector()
+		def sslConnector = loadInstance('org.apache.catalina.connector.Connector')
 		sslConnector.scheme = "https"
 		sslConnector.secure = true
 		sslConnector.port = httpsPort
@@ -235,7 +268,16 @@ class TomcatServer implements EmbeddableServer {
      * Stops the container
      */
     void stop() {
-		tomcat.stop()
+    	if(warRun) {
+    		// hit the shutdown port
+			try {
+				new URL("http://${warParams.host}:${warParams.port}").text
+			}catch(e) {}
+    	}
+    	else {
+    		tomcat.stop()
+    	}
+		
 	}
 
     /**
@@ -317,8 +359,27 @@ class TomcatLoader implements Loader, Lifecycle {
         classLoader = null
     }
 }
-
-class ParentDelegatingClassLoader extends ClassLoader {
+class SearchFirstURLClassLoader extends URLClassLoader {
+	SearchFirstURLClassLoader(URL[] urls) {
+		super(urls)
+	}
+	Class loadClass(String name, boolean resolve) {
+		if(name.startsWith("grails.") || name.startsWith("org.codehaus.groovy")) throw new ClassNotFoundException(name)
+		Class c = findLoadedClass(name)
+		if(c==null) {
+			try {
+				c = findClass(name)			
+			}
+			catch(ClassNotFoundException cnfe) {
+					c = getParent().loadClass(name, false)
+			}			
+		}
+		if(resolve) resolveClass(c)
+		
+		return c 
+	}
+}
+class ParentDelegatingClassLoader extends URLClassLoader {
 	ParentDelegatingClassLoader(ClassLoader parent) {
 		super(parent)
 	}

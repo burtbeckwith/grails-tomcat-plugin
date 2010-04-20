@@ -4,6 +4,8 @@ import grails.web.container.*
 
 class TomcatServerFactory implements EmbeddableServerFactory {
 
+	def pluginSettings
+	
 	EmbeddableServer createInline(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
 		return new TomcatServer(basedir, webXml, contextPath, classLoader)
 	}
