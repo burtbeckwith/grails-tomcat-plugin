@@ -379,7 +379,7 @@ class SearchFirstURLClassLoader extends URLClassLoader {
 		return c 
 	}
 }
-class ParentDelegatingClassLoader extends URLClassLoader {
+class ParentDelegatingClassLoader extends ClassLoader {
 	ParentDelegatingClassLoader(ClassLoader parent) {
 		super(parent)
 	}
