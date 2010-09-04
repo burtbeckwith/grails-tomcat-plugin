@@ -126,32 +126,75 @@ class TomcatServer implements EmbeddableServer {
      */
     void start(String host, int port) {
     	if(warRun) {
+            def outFile = new File(buildSettings.projectTargetDir, "tomcat-out.txt")
+            def errFile = new File(buildSettings.projectTargetDir, "tomcat-err.txt")
+            [outFile, errFile].each { ant.delete(dir: it, failonerror: false) }
+            
+            def resultProperty = "tomcat.result"
+            
     	    host = host ?: 'localhost'
     		warParams.host = host
     		warParams.port = port
-    		ant.java(classname:IsolatedTomcat.name, fork:true, failonerror:true) {
-    			classpath {
-    				def pluginSettings = GPU.getPluginBuildSettings()
-    				def pluginDir = pluginSettings.getPluginDirForName("tomcat")
-    				def jars = new File("${pluginDir.file.canonicalPath}/lib").listFiles()
-    				for(jar in jars) {
-    					pathelement location:jar
-    				}
-    			}
-    			arg value:warParams.tomcatDir
-    			arg value:warParams.warPath
-    			arg value:warParams.contextPath
-    			arg value:host
-    			arg value:port
-    			jvmarg value:"-Xmx512m"
-    		}
     		
+            Thread.start("tomcat process runner") {
+                ant.java(classname: IsolatedTomcat.name, fork: true, failonerror: false, output: outFile, error: errFile, resultproperty: resultProperty) {
+                    classpath {
+                        def pluginSettings = GPU.getPluginBuildSettings()
+                        def pluginDir = pluginSettings.getPluginDirForName("tomcat")
+                        def jars = new File("${pluginDir.file.canonicalPath}/lib").listFiles()
+                        for(jar in jars) {
+                            pathelement location:jar
+                        }
+                    }
+                    arg value:warParams.tomcatDir
+                    arg value:warParams.warPath
+                    arg value:warParams.contextPath
+                    arg value:host
+                    arg value:port
+                    jvmarg value:"-Xmx512m"
+                }
+            }
+            
     		Runtime.addShutdownHook {    			
     			// hit the shutdown port
     			try {
     				new URL("http://${host}:${port}").text
     			}catch(e) {}
     		}
+    		
+            def timeout = 10 * 1000 // 10 seconds
+            def interval = 0.5 * 1000 // half a second
+
+            def loops = Math.ceil(timeout / interval)
+            def started = false
+            def i = 0
+
+            while (!started && i++ < loops) {
+                // make sure tomcat didn't error starting up
+                def resultCode = ant.project.properties."$resultProperty"
+                if (resultCode != null) {
+                    def err = ""
+                    try { err = errFile.text } catch (IOException e) {}
+                    throw new RuntimeException("tomcat exited prematurely with code '$resultCode' (error output: '$err')")
+                }
+                
+                // look for the magic string that will be written to output when the app is running
+                try {
+                    started = outFile.text.contains("Server running. ")
+                } catch (IOException e) {
+                    started = false
+                }
+                
+                if (!started) { // wait a bit then try again
+                    Thread.sleep(interval as long)
+                }
+            }
+
+            if (!started) { // we didn't start in the specified timeout
+                throw new RuntimeException("Tomcat failed to start the app in $timeout ms (see output in $outFile.path)")
+            }
+            
+            println "Tomcat Server running WAR (output written to: $outFile)"
     	}
     	else {
     		preStart()
