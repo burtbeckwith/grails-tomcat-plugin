@@ -22,6 +22,8 @@ import org.apache.naming.resources.DirContextURLStreamHandler
 
 class TomcatServer implements EmbeddableServer {
 
+	static DEFAULT_JVM_ARGS = ["-Xmx512m"]
+	
 	Tomcat tomcat
 	def context
 	PluginBuildSettings pluginSettings
@@ -151,7 +153,9 @@ class TomcatServer implements EmbeddableServer {
                     arg value:warParams.contextPath
                     arg value:host
                     arg value:port
-                    jvmarg value:"-Xmx512m"
+                    for (a in (buildSettings.config.grails.tomcat.jvmArgs ?: DEFAULT_JVM_ARGS)) {
+                        jvmarg value: a
+                    }
                 }
             }
             
