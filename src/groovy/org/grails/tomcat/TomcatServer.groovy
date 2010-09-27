@@ -162,7 +162,7 @@ class TomcatServer implements EmbeddableServer {
     			}catch(e) {}
     		}
     		
-            def timeout = 10 * 1000 // 10 seconds
+            def timeout = 300 * 1000 // 5 minutes
             def interval = 0.5 * 1000 // half a second
 
             def loops = Math.ceil(timeout / interval)
