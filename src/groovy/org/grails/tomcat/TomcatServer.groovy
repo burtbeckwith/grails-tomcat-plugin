@@ -153,7 +153,7 @@ class TomcatServer implements EmbeddableServer {
                     arg value:warParams.contextPath
                     arg value:host
                     arg value:port
-                    for (a in (buildSettings.config.grails.tomcat.jvmArgs ?: DEFAULT_JVM_ARGS)) {
+                    for (a in (getConfigParam('jvmArgs') ?: DEFAULT_JVM_ARGS)) {
                         jvmarg value: a
                     }
                 }
@@ -212,6 +212,10 @@ class TomcatServer implements EmbeddableServer {
     	}
 	}
 	
+    private getConfigParam(String name) {
+        buildSettings.config.grails.tomcat[name]
+    }
+
 	private loadInstance(String name) {
 		tomcat.class.classLoader.loadClass(name).newInstance()
 	}
