@@ -163,7 +163,7 @@ class TomcatServer implements EmbeddableServer {
     		Runtime.addShutdownHook {    			
     			// hit the shutdown port
     			try {
-    				new URL("http://${host}:${port}").text
+    				new URL("http://${host}:${port + 1}").text
     			}catch(e) {}
     		}
 
@@ -323,7 +323,7 @@ class TomcatServer implements EmbeddableServer {
     	if(warRun) {
     		// hit the shutdown port
 			try {
-				new URL("http://${warParams.host}:${warParams.port}").text
+				new URL("http://${warParams.host}:${warParams.port + 1}").text
 			}catch(e) {}
     	}
     	else {
