@@ -131,7 +131,7 @@ class TomcatServer implements EmbeddableServer {
     	if(warRun) {
             def outFile = new File(buildSettings.projectTargetDir, "tomcat-out.txt")
             def errFile = new File(buildSettings.projectTargetDir, "tomcat-err.txt")
-            [outFile, errFile].each { ant.delete(dir: it, failonerror: false) }
+            [outFile, errFile].each { ant.delete(file: it, failonerror: false) }
             
             def resultProperty = "tomcat.result"
             
