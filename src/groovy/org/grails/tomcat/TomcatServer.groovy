@@ -22,6 +22,9 @@ import org.apache.naming.resources.DirContextURLStreamHandler
 
 class TomcatServer implements EmbeddableServer {
 
+	static DEFAULT_JVM_ARGS = ["-Xmx512m"]
+	static DEFAULT_STARTUP_TIMEOUT_SECS = 300 // 5 mins
+	
 	Tomcat tomcat
 	def context
 	PluginBuildSettings pluginSettings
@@ -151,7 +154,9 @@ class TomcatServer implements EmbeddableServer {
                     arg value:warParams.contextPath
                     arg value:host
                     arg value:port
-                    jvmarg value:"-Xmx512m"
+                    for (a in (getConfigParam('jvmArgs') ?: DEFAULT_JVM_ARGS)) {
+                        jvmarg value: a
+                    }
                 }
             }
             
@@ -161,11 +166,11 @@ class TomcatServer implements EmbeddableServer {
     				new URL("http://${host}:${port}").text
     			}catch(e) {}
     		}
-    		
-            def timeout = 300 * 1000 // 5 minutes
-            def interval = 0.5 * 1000 // half a second
 
-            def loops = Math.ceil(timeout / interval)
+            def timeoutSecs = getConfigParam('startupTimeoutSecs') ?: DEFAULT_STARTUP_TIMEOUT_SECS
+            def interval = 500 // half a second
+
+            def loops = Math.ceil((timeoutSecs * 1000) / interval)
             def started = false
             def i = 0
 
@@ -191,7 +196,7 @@ class TomcatServer implements EmbeddableServer {
             }
 
             if (!started) { // we didn't start in the specified timeout
-                throw new RuntimeException("Tomcat failed to start the app in $timeout ms (see output in $outFile.path)")
+                throw new RuntimeException("Tomcat failed to start the app in $timeoutSecs seconds (see output in $outFile.path)")
             }
             
             println "Tomcat Server running WAR (output written to: $outFile)"
@@ -208,6 +213,10 @@ class TomcatServer implements EmbeddableServer {
     	}
 	}
 	
+    private getConfigParam(String name) {
+        buildSettings.config.grails.tomcat[name]
+    }
+
 	private loadInstance(String name) {
 		tomcat.class.classLoader.loadClass(name).newInstance()
 	}

@@ -56,6 +56,7 @@ public class IsolatedTomcat {
 			}
 			
 			final Tomcat tomcat = new Tomcat();
+			tomcat.setPort(port);
 			
 			tomcat.setBaseDir(tomcatDir);
 			try {
@@ -70,7 +71,7 @@ public class IsolatedTomcat {
 			final Connector connector = tomcat.getConnector();
 			connector.setAttribute("address", host);
 			connector.setURIEncoding("UTF-8");
-			tomcat.setPort(port);
+
 			final int serverPort = port;
 			new Thread(new Runnable() {
 				public void run() {
