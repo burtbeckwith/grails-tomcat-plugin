@@ -9,7 +9,9 @@ grails.project.dependency.resolution = {
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
-		build "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion"
+		build( "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion" ) {
+			transitive = false
+		}
 		compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
 		compile "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"	
 		compile "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"	
