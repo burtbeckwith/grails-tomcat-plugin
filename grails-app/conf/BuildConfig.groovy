@@ -12,11 +12,11 @@ grails.project.dependency.resolution = {
 		build( "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion" ) {
 			transitive = false
 		}
-		compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
-		compile "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"	
-		compile "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"	
+		build "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
+		build "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"	
+		build "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"	
 
-        compile "org.grails:grails-plugin-tomcat:${grailsVersion}"
+        build "org.grails:grails-plugin-tomcat:${grailsVersion}"
     }
 
 }
