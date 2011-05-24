@@ -14,7 +14,7 @@
  */
 class TomcatGrailsPlugin {
     // the plugin version
-    def version = "1.4.0.BUILD-SNAPSHOT"
+    def version = "1.4.0.M1"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.4 > *"
     // resources that are excluded from plugin packaging
@@ -29,8 +29,8 @@ class TomcatGrailsPlugin {
     def author = "Graeme Rocher"
     def authorEmail = "graeme.rocher@springsource.com"
     def title = "Apache Tomcat plugin for Grails"
-    def description = '''\\
-Replaces Jetty with Tomcat as the default development time server for Grails
+    def description = '''
+Makes Tomcat 7.0 the default servlet container for Grails at development time.
 '''
 
     // URL to the plugin's documentation
