@@ -7,6 +7,9 @@ grails.project.test.reports.dir	= "target/test-reports"
 grails.project.dependency.resolution = {
     inherits "global" // inherit Grails' default dependencies
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
+	repositories {
+		grailsCentral()
+	}
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 		build( "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion" ) {
@@ -20,7 +23,7 @@ grails.project.dependency.resolution = {
     }
 
 	plugins {
-		build( ":release:1.0.0.M1" ) {
+		build( ":release:1.0.0.M2" ) {
 			export = false
 		}
 	}
