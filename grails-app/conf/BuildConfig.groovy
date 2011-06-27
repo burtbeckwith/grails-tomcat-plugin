@@ -18,6 +18,9 @@ grails.project.dependency.resolution = {
 		build "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
 		build "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"	
 		build "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"	
+		
+		// needed for JSP compilation
+		runtime "org.eclipse.jdt.core.compiler:ecj:3.6.2"
 
         build "org.grails:grails-plugin-tomcat:${grailsVersion}"
     }
