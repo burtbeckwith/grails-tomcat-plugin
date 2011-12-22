@@ -1,33 +1,34 @@
 
 tomcatVersion = "7.0.16"
 
-grails.project.class.dir = "target/classes"
-grails.project.test.class.dir = "target/test-classes"
-grails.project.test.reports.dir	= "target/test-reports"
+grails.project.work.dir = 'target'
+
 grails.project.dependency.resolution = {
-    inherits "global" // inherit Grails' default dependencies
-    log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
-	repositories {
-		grailsCentral()
-	}
+
+    inherits "global"
+    log "warn"
+
+    repositories {
+        grailsCentral()
+    }
+
     dependencies {
-        // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
-		build( "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion" ) {
-			transitive = false
-		}
-		build "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
-		build "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"	
-		build "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"	
-		
-		// needed for JSP compilation
-		runtime "org.eclipse.jdt.core.compiler:ecj:3.6.2"
+        build("org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion") {
+            transitive = false
+        }
+        build "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
+        build "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"
+        build "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
+
+        // needed for JSP compilation
+        runtime "org.eclipse.jdt.core.compiler:ecj:3.6.2"
 
         build "org.grails:grails-plugin-tomcat:${grailsVersion}"
     }
 
-	plugins {
-		build( ":release:1.0.0.RC3" ) {
-			export = false
-		}
-	}
+    plugins {
+        build(":release:1.0.0") {
+            export = false
+        }
+    }
 }

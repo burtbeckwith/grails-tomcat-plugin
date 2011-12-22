@@ -2,4 +2,4 @@ plugin.xml
 target
 web-app
 *.zip
-
+.settings

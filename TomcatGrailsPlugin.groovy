@@ -13,27 +13,12 @@
  * limitations under the License.
  */
 class TomcatGrailsPlugin {
-    // the plugin version
     def version = "2.1.0.BUILD-SNAPSHOT"
-    // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.1 > *"
-    // resources that are excluded from plugin packaging
-    def pluginExcludes = [
-            "grails-app/views/error.gsp",
-	    "grails-app/domain/*.groovy",
-	    "grails-app/controllers/*.groovy"		
-    ]
-    // don't package in war
-    def scopes = [excludes:'war']
-	
+    def scopes = [excludes: 'war']
     def author = "Graeme Rocher"
     def authorEmail = "graeme.rocher@springsource.com"
     def title = "Apache Tomcat plugin for Grails"
-    def description = '''
-Makes Tomcat 7.0 the default servlet container for Grails at development time.
-'''
-
-    // URL to the plugin's documentation
+    def description = 'Makes Tomcat 7.0 the default servlet container for Grails at development time.'
     def documentation = "http://grails.org/plugin/tomcat"
-
 }
