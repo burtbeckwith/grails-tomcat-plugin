@@ -25,7 +25,11 @@ grails.project.dependency.resolution = {
 		// needed for JSP compilation
 		runtime "org.eclipse.jdt.core.compiler:ecj:3.6.2"
 
-        compile "org.grails:grails-plugin-tomcat:${grailsVersion}"
+        compile( "org.grails:grails-plugin-tomcat:${grailsVersion}" ) {
+            excludes group:"org.grails", name:"grails-core"
+            excludes group:"org.grails", name:"grails-bootstrap"
+            excludes group:"org.grails", name:"grails-web"                        
+        }
     }
 
 }
