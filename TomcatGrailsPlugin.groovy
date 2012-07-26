@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 class TomcatGrailsPlugin {
-    def version = "2.1.0"
+    def version = "2.1.1.BUILD-SNAPSHOT"
     def grailsVersion = "2.1 > *"
     def scopes = [excludes: 'war']
     def author = "Graeme Rocher"
