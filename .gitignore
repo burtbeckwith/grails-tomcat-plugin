@@ -1,4 +1,6 @@
+*.swp
 plugin.xml
+stacktrace.log
 target
 web-app
 *.zip
