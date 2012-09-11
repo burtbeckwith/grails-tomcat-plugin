@@ -1,5 +1,5 @@
 
-tomcatVersion = "7.0.29"
+tomcatVersion = "7.0.30"
 
 grails.project.work.dir = 'target'
 
