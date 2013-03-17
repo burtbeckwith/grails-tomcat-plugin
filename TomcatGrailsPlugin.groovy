@@ -1,4 +1,4 @@
-/* Copyright 2004-2012 SpringSource.
+/* Copyright 2004-2013 SpringSource.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 class TomcatGrailsPlugin {
-    def version = "2.3.0.BUILD-SNAPSHOT"
+    def version = "7.0.37.BUILD-SNAPSHOT"
     def grailsVersion = "2.3 > *"
     def scopes = [excludes: 'war']
     def author = "Graeme Rocher"
@@ -21,7 +21,6 @@ class TomcatGrailsPlugin {
     def title = "Apache Tomcat plugin for Grails"
     def description = 'Makes Tomcat 7.0 the default servlet container for Grails at development time.'
     def documentation = "http://grails.org/plugin/tomcat"
-
     def license = 'APACHE'
     def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']
     def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPTOMCAT']

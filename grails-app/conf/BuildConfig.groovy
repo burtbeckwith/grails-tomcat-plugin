@@ -1,10 +1,11 @@
-tomcatVersion = "7.0.37"
-
 grails.project.work.dir = 'target'
 
 grails.project.dependency.resolution = {
 
-    inherits "global"
+    inherits "global", {
+        // TODO remove
+        excludes 'grails-plugin-tomcat', 'grails-tomcat'
+    }
     log "warn"
 
     repositories {
@@ -12,6 +13,9 @@ grails.project.dependency.resolution = {
     }
 
     dependencies {
+
+        String tomcatVersion = "7.0.37"
+
         runtime("org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion") {
             excludes 'tomcat-catalina', 'tomcat-coyote'
         }
@@ -20,19 +24,18 @@ grails.project.dependency.resolution = {
         runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
         runtime "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatVersion"
 
-		// needed for JSP compilation
-		runtime "org.eclipse.jdt.core.compiler:ecj:3.7.2"
-		
+        // needed for JSP compilation
+        runtime "org.eclipse.jdt.core.compiler:ecj:3.7.2"
+
         compile("org.grails:grails-plugin-tomcat:$grailsVersion") {
             excludes group: "org.grails", name: "grails-core"
             excludes group: "org.grails", name: "grails-bootstrap"
             excludes group: "org.grails", name: "grails-web"
-
         }
     }
 
     plugins {
-        build(':release:2.2.0', ':rest-client-builder:1.0.2') {
+        build(':release:2.2.1', ':rest-client-builder:1.0.3') {
             export = false
         }
     }
