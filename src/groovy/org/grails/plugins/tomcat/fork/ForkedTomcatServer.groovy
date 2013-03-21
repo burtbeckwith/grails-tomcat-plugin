@@ -157,7 +157,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     @CompileStatic
     @Override
-    protected Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
+    Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
         Set<File> jars = []
 
         jars.addAll super.findSystemClasspathJars(buildSettings)
