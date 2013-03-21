@@ -18,7 +18,9 @@ package org.grails.plugins.tomcat.fork
 import grails.util.BuildSettings
 import grails.web.container.EmbeddableServer
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.cli.fork.ExecutionContext
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 
 /**
  * Execution context for the forked Tomcat container
@@ -37,7 +39,7 @@ class TomcatExecutionContext extends ExecutionContext {
     @Override
     protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         final buildDependencies = super.buildMinimalIsolatedClasspath(buildSettings)
-        final tomcatJars = org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess.findTomcatJars(buildSettings)
+        final tomcatJars = process.findSystemClasspathJars(buildSettings)
         buildDependencies.addAll(tomcatJars.findAll { File f -> !f.name.contains('juli')})
 
         return buildDependencies
