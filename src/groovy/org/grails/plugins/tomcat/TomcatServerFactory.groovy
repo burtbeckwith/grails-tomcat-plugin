@@ -42,6 +42,9 @@ class TomcatServerFactory implements EmbeddableServerFactory, BuildSettingsAware
     private ForkedTomcatServer createForked(String contextPath, forkConfig, boolean warMode = false) {
         final settings = buildSettings
         TomcatExecutionContext ec = new TomcatExecutionContext()
+        final forkedTomcat = new ForkedTomcatServer(ec)
+        ec.process = forkedTomcat
+
         ec.initialize(settings)
         ec.contextPath = contextPath
         ec.resourcesDir = settings.resourcesDir
@@ -49,7 +52,6 @@ class TomcatServerFactory implements EmbeddableServerFactory, BuildSettingsAware
             ec.warPath = settings.projectWarFile.canonicalPath
         }
 
-        final forkedTomcat = new ForkedTomcatServer(ec)
         if (forkConfig instanceof Map) {
             forkedTomcat.configure((Map)forkConfig)
         }

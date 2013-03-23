@@ -24,8 +24,8 @@ import groovy.transform.CompileStatic
 import org.apache.catalina.startup.Tomcat
 import org.codehaus.groovy.grails.cli.fork.ExecutionContext
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
-import org.codehaus.groovy.grails.plugins.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.grails.plugins.tomcat.TomcatKillSwitch
 
 /**
@@ -159,19 +159,19 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     @Override
     Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
         Set<File> jars = []
-
         jars.addAll super.findSystemClasspathJars(buildSettings)
 
-        def pluginManager = PluginManagerHolder.getPluginManager()
-        GrailsPlugin plugin = pluginManager.getGrailsPlugin('tomcat')
-        String jarName = "grails-plugin-tomcat-${plugin.getVersion()}.jar"
-        File jar = plugin.descriptor.file.parentFile.listFiles().find { File f -> f.name.equals(jarName) }
+        GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForName('tomcat')
+        String jarName = "grails-plugin-tomcat-${info.version}.jar"
+        File jar = info.descriptor.file.parentFile.listFiles().find { File f -> f.name.equals(jarName) }
+
         if (jar?.exists()) {
             jars << jar
         }
         else {
             CONSOLE.error "Tomcat plugin classes JAR $jarName not found"
         }
+
         jars
     }
 
