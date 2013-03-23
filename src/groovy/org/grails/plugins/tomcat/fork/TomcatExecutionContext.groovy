@@ -30,6 +30,8 @@ import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
  */
 @CompileStatic
 class TomcatExecutionContext extends ExecutionContext {
+    private static final long serialVersionUID = 1
+
     String contextPath
     String host = EmbeddableServer.DEFAULT_HOST
     int port = EmbeddableServer.DEFAULT_PORT
