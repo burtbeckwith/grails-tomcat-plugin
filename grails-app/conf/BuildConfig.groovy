@@ -13,7 +13,7 @@ grails.project.dependency.resolution = {
 
     dependencies {
 
-        String tomcatVersion = "7.0.37"
+        String tomcatVersion = "7.0.39"
 
         runtime("org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion") {
             excludes 'tomcat-catalina', 'tomcat-coyote'
