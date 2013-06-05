@@ -1,5 +1,3 @@
-grails.project.work.dir = 'target'
-
 grails.project.dependency.resolver = "maven"
 grails.project.work.dir="target/work"
 grails.project.dependency.resolution = {
