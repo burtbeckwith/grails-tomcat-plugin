@@ -21,6 +21,7 @@ import grails.util.BuildSettingsHolder
 import grails.util.PluginBuildSettings
 import grails.web.container.EmbeddableServer
 
+import org.apache.catalina.Context
 import org.apache.tomcat.util.scan.StandardJarScanner
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
@@ -47,6 +48,8 @@ abstract class TomcatServer implements EmbeddableServer {
     protected String truststore
     protected File truststoreFile
     protected String trustPassword
+    protected Boolean shouldScan
+    protected Set<String> extraJarsToSkip
 
     // These are set from the outside in _GrailsRun
     def grailsConfig
@@ -83,14 +86,17 @@ abstract class TomcatServer implements EmbeddableServer {
 
         System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
 
+        def scanConfig = getConfigParam("scan")
+        if(scanConfig) {
+            shouldScan = (Boolean) (scanConfig.enabled instanceof Boolean ? scanConfig.enabled : false)
+            extraJarsToSkip = (scanConfig.excludes instanceof Collection) ? scanConfig.excludes.collect { it.toString() } : []
+        }
+        
         tomcatDir.deleteDir()
     }
-
-    protected boolean checkAndInitializingClasspathScanning() {
-        def scanConfig = getConfigParam("scan")
-        def shouldScan = (Boolean) (scanConfig.enabled instanceof Boolean ? scanConfig.enabled : false)
-        def extraJarsToSkip = scanConfig.excludes
-        if (extraJarsToSkip instanceof List && shouldScan) {
+    
+    protected void configureJarScanner(Context context) {
+        if (extraJarsToSkip && shouldScan) {
             try {
                 def jarsToSkipField = ReflectionUtils.findField(StandardJarScanner, "defaultJarsToSkip", Set)
                 ReflectionUtils.makeAccessible(jarsToSkipField)
@@ -100,7 +106,9 @@ abstract class TomcatServer implements EmbeddableServer {
                 // ignore
             }
         }
-        shouldScan
+        def jarScanner = new StandardJarScanner()
+        jarScanner.setScanClassPath(shouldScan)
+        context.setJarScanner(jarScanner)
     }
 
     /**

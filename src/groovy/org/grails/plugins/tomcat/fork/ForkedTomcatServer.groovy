@@ -178,4 +178,25 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     static void startKillSwitch(final Tomcat tomcat, final int serverPort) {
         new Thread(new TomcatKillSwitch(tomcat, serverPort)).start()
     }
+
+    void restart() {
+        stop()
+        start()
+    }
+
+    void start() {
+        start(null, null)
+    }
+
+    void start(int port) {
+        start(null, port)
+    }
+
+    void startSecure() {
+        startSecure(null)
+    }
+
+    void startSecure(int port) {
+        startSecure(null, null, port)
+    }
 }

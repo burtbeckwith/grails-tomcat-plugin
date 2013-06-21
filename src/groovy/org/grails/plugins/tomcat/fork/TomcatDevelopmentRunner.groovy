@@ -30,7 +30,8 @@ class TomcatDevelopmentRunner extends InlineExplodedTomcatServer {
             for (File f in wars) {
                 final fileName = f.name
                 if (fileName.endsWith(".war")) {
-                    tomcat.addWebapp(f.name - '.war', f.absolutePath)
+                    Context context = tomcat.addWebapp(f.name - '.war', f.absolutePath)
+                    configureJarScanner(context)
                 }
             }
         }

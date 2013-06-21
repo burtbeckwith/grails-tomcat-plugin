@@ -47,12 +47,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
         tomcat.setBaseDir(tomcatDir.absolutePath)
         context = tomcat.addWebapp(contextPath, basedir)
-        boolean shouldScan = checkAndInitializingClasspathScanning()
-
-        def jarScanner = new StandardJarScanner()
-        jarScanner.setScanClassPath(shouldScan)
-        context.setJarScanner(jarScanner)
-
+        configureJarScanner(context)
         tomcat.enableNaming()
 
         // we handle reloading manually

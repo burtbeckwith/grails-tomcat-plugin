@@ -19,6 +19,7 @@ import grails.build.logging.GrailsConsole
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 
+import org.apache.catalina.Context
 import org.apache.catalina.LifecycleException
 import org.apache.catalina.connector.Connector
 import org.apache.catalina.startup.Tomcat
@@ -85,7 +86,8 @@ class TomcatWarRunner extends TomcatServer {
 
         tomcat.baseDir = tomcatDir
         try {
-            tomcat.addWebapp contextPath, warPath
+            Context context = tomcat.addWebapp(contextPath, warPath)
+            configureJarScanner(context)
         } catch (Throwable e) {
             CONSOLE.error("Error loading Tomcat: " + e.getMessage(), e)
             System.exit(1)
