@@ -48,7 +48,7 @@ abstract class TomcatServer implements EmbeddableServer {
     protected String truststore
     protected File truststoreFile
     protected String trustPassword
-    protected Boolean shouldScan
+    protected Boolean shouldScan = false
     protected Set<String> extraJarsToSkip
 
     // These are set from the outside in _GrailsRun
