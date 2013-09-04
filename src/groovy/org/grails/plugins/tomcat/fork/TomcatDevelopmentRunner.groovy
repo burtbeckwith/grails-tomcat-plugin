@@ -59,11 +59,12 @@ class TomcatDevelopmentRunner extends InlineExplodedTomcatServer {
     @Override
     protected void configureAliases(Context context) {
         def aliases = []
-        final directories = GrailsPluginUtils.getPluginDirectories()
-        for (Resource dir in directories) {
-            def webappDir = new File("${dir.file.absolutePath}/web-app")
-            if (webappDir.exists()) {
-                aliases << "/plugins/${dir.file.name}=${webappDir.absolutePath}"
+        if (pluginSettings != null) {
+            for (plugin in pluginSettings.pluginInfos) {
+                def webappDir = new File("${plugin.pluginDir.file.absolutePath}/web-app")
+                if (webappDir.exists()) {
+                    aliases << "/plugins/${plugin.fullName}=${webappDir.absolutePath}"
+                }
             }
         }
         if (aliases) {
