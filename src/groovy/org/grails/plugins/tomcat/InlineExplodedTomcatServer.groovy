@@ -15,19 +15,21 @@
  */
 package org.grails.plugins.tomcat
 
+import grails.util.Holders
+
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
+import grails.util.Environment
 import grails.util.GrailsNameUtils
+
+import org.apache.catalina.Context
+import org.apache.catalina.Loader
 import org.apache.catalina.connector.Connector
 import org.apache.catalina.startup.Tomcat
 import org.apache.coyote.http11.Http11NioProtocol
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import org.apache.tomcat.util.scan.StandardJarScanner
-import org.springframework.util.ReflectionUtils
-import org.apache.catalina.Loader
-import org.apache.catalina.Context
-import grails.util.Environment
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.plugins.tomcat.fork.ForkedTomcatServer
+
 /**
  * Serves the app, without packaging as a war and runs it in the same JVM.
  */
@@ -43,14 +45,9 @@ class InlineExplodedTomcatServer extends TomcatServer {
             contextPath = ''
         }
 
-        tomcat.setBaseDir( tomcatDir.absolutePath )
+        tomcat.setBaseDir(tomcatDir.absolutePath)
         context = tomcat.addWebapp(contextPath, basedir)
-        boolean shouldScan = checkAndInitializingClasspathScanning()
-
-        def jarScanner = new StandardJarScanner()
-        jarScanner.setScanClassPath(shouldScan)
-        context.setJarScanner(jarScanner)
-
+        configureJarScanner(context)
         tomcat.enableNaming()
 
         // we handle reloading manually
@@ -71,7 +68,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
     protected void configureAliases(Context context) {
         def aliases = []
-        def pluginManager = PluginManagerHolder.getPluginManager()
+        def pluginManager = Holders.getPluginManager()
 
         if (pluginManager != null) {
             for (plugin in pluginManager.userPlugins) {
@@ -111,12 +108,12 @@ class InlineExplodedTomcatServer extends TomcatServer {
         tomcat.port = httpPort
         tomcat.connector.URIEncoding = 'UTF-8'
 
-        if (httpsPort >= 0) {
+        if (httpsPort) {
             def sslConnector = loadInstance('org.apache.catalina.connector.Connector')
             sslConnector.scheme = "https"
             sslConnector.secure = true
             sslConnector.port = httpsPort
-            sslConnector.setProperty("SSLEnabled","true")
+            sslConnector.setProperty("SSLEnabled", "true")
             sslConnector.setAttribute("keystoreFile", keystoreFile.absolutePath)
             sslConnector.setAttribute("keystorePass", keyPassword)
             sslConnector.URIEncoding = 'UTF-8'
@@ -129,26 +126,17 @@ class InlineExplodedTomcatServer extends TomcatServer {
                 CONSOLE.addStatus "Using truststore $truststore"
                 sslConnector.setAttribute("truststoreFile", truststore)
                 sslConnector.setAttribute("truststorePass", trustPassword)
-                sslConnector.setAttribute("clientAuth", "want")
+                sslConnector.setAttribute("clientAuth", getConfigParam("clientAuth") ?: "want")
             }
 
             tomcat.service.addConnector(sslConnector)
         }
 
-        tomcat.start()
-        if(Environment.isFork()) {
-            IsolatedTomcat.startKillSwitch(tomcat, tomcat.connector.getLocalPort())
+        if (Environment.isFork()) {
+            ForkedTomcatServer.startKillSwitch(tomcat, httpPort)
         }
-    }
+        tomcat.start()
 
-    int getLocalHttpPort() {
-        return tomcat.connector.getLocalPort()
-    }
-
-    int getLocalHttpsPort() {
-        tomcat.service.findConnectors().find {
-            it.scheme == 'https'
-        }?.getLocalPort() ?: -1
     }
 
     void stop() {
@@ -169,8 +157,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
             return
         }
 
-        System.setProperty("javax.sql.DataSource.Factory","org.apache.commons.dbcp.BasicDataSourceFactory");
-
+        System.setProperty("javax.sql.DataSource.Factory", "org.apache.commons.dbcp.BasicDataSourceFactory")
 
         jndiEntries.each { name, resCfg ->
             if (resCfg) {
@@ -184,13 +171,12 @@ class InlineExplodedTomcatServer extends TomcatServer {
                 res.description = resCfg.remove("description")
                 res.scope = resCfg.remove("scope")
                 // now it's only the custom properties left in the Map...
-                resCfg.each {key, value ->
-                    res.setProperty (key, value)
+                resCfg.each { key, value ->
+                    res.setProperty(key, value)
                 }
 
                 context.namingResources.addResource res
             }
         }
     }
-
 }
