@@ -130,10 +130,20 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         } )
 
         t.start()
-        while(!isAvailable(host, httpPort)) {
+        waitForStartup(host, httpPort)
+        System.setProperty(TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true")
+    }
+
+    @CompileStatic
+    void waitForStartup(String host, int port) {
+        while(!isAvailable(host, port)) {
             sleep 100
         }
-        System.setProperty(TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true")
+        try {
+            new URL("http://${host ?: 'localhost'}:${port ?: 8080}/is-tomcat-running").text
+        } catch(e) {
+            // ignore
+        }
     }
 
     @CompileStatic
