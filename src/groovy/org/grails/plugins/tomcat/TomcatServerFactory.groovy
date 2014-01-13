@@ -30,22 +30,12 @@ class TomcatServerFactory implements EmbeddableServerFactory, BuildSettingsAware
 
     @CompileStatic
     EmbeddableServer createInline(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
-        def forkConfig = getForkConfig ()
-        if (forkConfig) {
-            return createForked(contextPath, forkConfig)
+        final obj = buildSettings?.forkSettings?.get("run")
+        if (obj) {
+            return createForked(contextPath, obj)
         }
 
         return new InlineExplodedTomcatServer(basedir, webXml, contextPath, classLoader)
-    }
-
-    @CompileStatic
-    private def getForkConfig () {
-        if (buildSettings?.grailsEnv == "test") {
-            buildSettings?.forkSettings?.get("test")
-        }
-        else {
-            buildSettings?.forkSettings?.get("run")
-        }
     }
 
     @CompileStatic
