@@ -30,12 +30,17 @@ class TomcatServerFactory implements EmbeddableServerFactory, BuildSettingsAware
 
     @CompileStatic
     EmbeddableServer createInline(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
-        final obj = buildSettings?.forkSettings?.get("run")
-        if (obj) {
-            return createForked(contextPath, obj)
+        def forkConfig = getForkConfigInline ()
+        if (forkConfig) {
+            return createForked(contextPath, forkConfig)
         }
 
         return new InlineExplodedTomcatServer(basedir, webXml, contextPath, classLoader)
+    }
+
+    @CompileStatic
+    private def getForkConfigInline () {
+        isEnv ('test') ? getForkConfig ('test') : getForkConfig ('run')
     }
 
     @CompileStatic
@@ -70,7 +75,21 @@ class TomcatServerFactory implements EmbeddableServerFactory, BuildSettingsAware
 
     EmbeddableServer createForWAR(String warPath, String contextPath) {
         buildSettings.projectWarFile = new File(warPath)
-        final forkConfig = buildSettings?.forkSettings?.get("war") ?: buildSettings?.forkSettings?.get("run") ?: [:]
-        return createForked(contextPath, forkConfig, true)
+        return createForked(contextPath, getForkConfigWar (), true)
+    }
+
+    @CompileStatic
+    private def getForkConfigWar () {
+        getForkConfig('war') ?: getForkConfig ('run') ?: [:]
+    }
+
+    @CompileStatic
+    private def getForkConfig (String key) {
+        buildSettings?.forkSettings?.get (key)
+    }
+
+    @CompileStatic
+    private boolean isEnv (String env) {
+        buildSettings?.grailsEnv == env
     }
 }
