@@ -13,7 +13,7 @@ grails.project.dependency.resolution = {
 
     dependencies {
 
-        String tomcatVersion = "7.0.47"
+        String tomcatVersion = "7.0.50"
 
         runtime("org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion") {
             excludes 'org.apache.tomcat:tomcat-catalina', 'org.apache.tomcat:tomcat-coyote'
@@ -28,10 +28,13 @@ grails.project.dependency.resolution = {
 
         // needed for JSP compilation
         runtime "org.eclipse.jdt.core.compiler:ecj:3.7.2"
+
+        // needed for JNDI
+        optional 'commons-dbcp:commons-dbcp:1.4'
     }
 
     plugins {
-        build(':release:3.0.1', ':rest-client-builder:2.0.0') {
+        build(':release:3.0.1', ':rest-client-builder:2.0.1') {
             export = false
         }
     }

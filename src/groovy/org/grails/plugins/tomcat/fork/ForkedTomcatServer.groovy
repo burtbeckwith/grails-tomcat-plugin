@@ -103,7 +103,9 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
             new TomcatWarRunner(ec.warPath, ec.contextPath)
         }
         else {
-            new TomcatDevelopmentRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
+            def runner = new TomcatDevelopmentRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
+            runner.grailsConfig = buildSettings.config
+            return runner
         }
     }
 
@@ -170,6 +172,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
         Set<File> jars = []
         jars.addAll super.findSystemClasspathJars(buildSettings)
+        jars.addAll buildSettings.buildDependencies.findAll { File it -> it.name.startsWith("ecj") ||  it.name.contains("commons-dbcp")  || it.name.contains("commons-pool") } 
 
         GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForName('tomcat')
         String jarName = "grails-plugin-tomcat-${info.version}.jar"

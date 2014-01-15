@@ -145,9 +145,6 @@ class InlineExplodedTomcatServer extends TomcatServer {
         GrailsPluginUtils.clearCaches()
     }
 
-    private loadInstance(String name) {
-        tomcat.class.classLoader.loadClass(name).newInstance()
-    }
 
     private preStart() {
         eventListener?.triggerEvent("ConfigureTomcat", tomcat)
@@ -159,12 +156,14 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
         System.setProperty("javax.sql.DataSource.Factory", "org.apache.commons.dbcp.BasicDataSourceFactory")
 
+        def classLoader = tomcat.class.classLoader
         jndiEntries.each { name, resCfg ->
             if (resCfg) {
                 if (!resCfg["type"]) {
                     throw new IllegalArgumentException("Must supply a resource type for JNDI configuration")
                 }
-                def res = loadInstance('org.apache.catalina.deploy.ContextResource')
+
+                def res = classLoader.loadClass('org.apache.catalina.deploy.ContextResource').newInstance()
                 res.name = name
                 res.type = resCfg.remove("type")
                 res.auth = resCfg.remove("auth")
