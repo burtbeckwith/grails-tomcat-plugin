@@ -45,6 +45,10 @@ class InlineExplodedTomcatServer extends TomcatServer {
             contextPath = ''
         }
 
+        if (this.hasProperty("forkedClassLoader")){
+            this.forkedClassLoader = classLoader
+        }
+
         tomcat.setBaseDir(tomcatDir.absolutePath)
         context = tomcat.addWebapp(contextPath, basedir)
         configureJarScanner(context)

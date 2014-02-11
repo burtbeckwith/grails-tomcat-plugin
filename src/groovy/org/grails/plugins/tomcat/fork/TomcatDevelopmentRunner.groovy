@@ -18,7 +18,6 @@ class TomcatDevelopmentRunner extends InlineExplodedTomcatServer {
 
     TomcatDevelopmentRunner(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
         super(basedir, webXml, contextPath, classLoader)
-        this.forkedClassLoader = classLoader
     }
 
     @Override
