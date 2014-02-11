@@ -93,6 +93,7 @@ abstract class TomcatServer implements EmbeddableServer {
         }
         
         tomcatDir.deleteDir()
+        new File(tomcatDir, 'webapps').mkdirs()
     }
     
     protected void configureJarScanner(Context context) {
