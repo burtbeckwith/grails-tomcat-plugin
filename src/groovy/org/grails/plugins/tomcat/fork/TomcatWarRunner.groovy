@@ -86,7 +86,7 @@ class TomcatWarRunner extends TomcatServer {
 
         tomcat.baseDir = tomcatDir
         try {
-            Context context = tomcat.addWebapp(contextPath, warPath)
+            Context context = tomcat.addWebapp(contextPath != '/' ? contextPath : '', warPath)
             configureJarScanner(context)
         } catch (Throwable e) {
             CONSOLE.error("Error loading Tomcat: " + e.getMessage(), e)
