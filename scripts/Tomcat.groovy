@@ -26,6 +26,7 @@ grails tomcat undeploy - Undeploy from a tomcat server
     switch (cmd) {
         case 'deploy':
             war()
+	    def warName = configureWarName()
             println "Deploying application $serverContextPath to Tomcat"
             deploy(war: warName, url: url, path: serverContextPath, username: user, password: pass)
             break
