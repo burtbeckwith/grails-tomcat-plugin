@@ -1,3 +1,8 @@
+if(System.getenv('TRAVIS_BRANCH')) {
+    grails.project.repos.grailsCentral.username = System.getenv("GRAILS_CENTRAL_USERNAME")
+    grails.project.repos.grailsCentral.password = System.getenv("GRAILS_CENTRAL_PASSWORD")    
+}
+
 grails.project.dependency.resolver = "maven"
 grails.project.work.dir="target/work"
 grails.project.dependency.resolution = {
@@ -13,7 +18,7 @@ grails.project.dependency.resolution = {
 
     dependencies {
 
-        String tomcatVersion = "7.0.52"
+        String tomcatVersion = "7.0.53"
 
         runtime("org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion") {
             excludes 'org.apache.tomcat:tomcat-catalina', 'org.apache.tomcat:tomcat-coyote'
