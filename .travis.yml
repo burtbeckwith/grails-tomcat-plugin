@@ -6,6 +6,8 @@ before_script:
 script: ./travis-build.sh
 env:
   global:
+  - GIT_NAME="Graeme Rocher"
+  - GIT_EMAIL="graeme.rocher@gmail.com"  
   - secure: mbckzNa2aByQxt+LHvx4SRVC8SuvpA2wOlpCsGJC8t9YqGOsMs34i2dZtk5a/xgGSnjB5NFvkP67OICgZ9e9QeyOGWTkhfQ4c1p2l7PFoTQJtWMYxWE8QCgEPjwKfmcKDpGJ1/89Rq4u6IotUTycJgb42W3NTMLizBu6jviN/cw=
   - secure: IEEeUlGb/57GafdpbamRCnk+US2/q4hsxG4gGOH9LZKa0/wbUXMbpcyH+2KvuiFLD68ID4331Nz7LNGOb4ohuo+PpLP6zzJGLKKDDUbNMZIcGwRns/yyIyONYiYPInGrI/gyxMYBSM99X/YInw+rvgQ0jTrsrMOledYtMbL+r3c=
   - secure: tVyK3E6xOs0S9oI5QPj7eNlWTHwhqBRcY/io3Enb+VSGMMrpZA+X6igm8IvLIYY+VDDQHoqVcJU1JyStoskthxSsRDv3vB9SaNDfLh36ifjscKffZOGC9WiHSSPaqJYxEbZq1CTVgZM654VuaFgSWqXYmpBHZmNwRulDQjAlNOA=
