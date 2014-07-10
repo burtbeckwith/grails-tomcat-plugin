@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 SpringSource
+ * Copyright 2012-2013 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,182 +34,163 @@ import org.grails.plugins.tomcat.TomcatKillSwitch
  * @author Graeme Rocher
  * @since 2.2
  */
+// @CompileStatic
 class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer {
 
-    public static final GrailsConsole CONSOLE = GrailsConsole.getInstance()
-    @Delegate EmbeddableServer tomcatRunner
+	public static final GrailsConsole CONSOLE = GrailsConsole.getInstance()
+	@Delegate EmbeddableServer tomcatRunner
 
-    ForkedTomcatServer(TomcatExecutionContext executionContext) {
-        this.executionContext = executionContext
-        this.forkReserve = true
-    }
+	ForkedTomcatServer(TomcatExecutionContext executionContext) {
+		this.executionContext = executionContext
+		forkReserve = true
+	}
 
-    private ForkedTomcatServer() {
-        executionContext = (TomcatExecutionContext)readExecutionContext()
-        if (executionContext == null) {
-            throw new IllegalStateException("Forked server created without first creating execution context and calling fork()")
-        }
-    }
+	protected ForkedTomcatServer() {
+		executionContext = (TomcatExecutionContext)readExecutionContext()
+		if (!executionContext) {
+			throw new IllegalStateException("Forked server created without first creating execution context and calling fork()")
+		}
+	}
 
-    static void main(String[] args) {
-        new ForkedTomcatServer().run()
-    }
+	static void main(String[] args) {
+		new ForkedTomcatServer().run()
+	}
 
-    @CompileStatic
-    def run() {
-        if (!isReserveProcess()) {
-            runInternal()
-        }
-        else {
-            CONSOLE.verbose("Waiting for resume signal for idle JVM")
-            waitForResume()
-            CONSOLE.verbose("Resuming idle JVM")
-            runInternal()
-        }
-    }
+	def run() {
+		if (!isReserveProcess()) {
+			runInternal()
+		}
+		else {
+			CONSOLE.verbose "Waiting for resume signal for idle JVM"
+			waitForResume()
+			CONSOLE.verbose "Resuming idle JVM"
+			runInternal()
+		}
+	}
 
-    protected void runInternal() {
-        TomcatExecutionContext ec = (TomcatExecutionContext)executionContext
-        BuildSettings buildSettings = initializeBuildSettings(ec)
-        URLClassLoader classLoader = initializeClassLoader(buildSettings)
-        initializeLogging(ec.grailsHome, classLoader)
+	protected void runInternal() {
+		TomcatExecutionContext ec = (TomcatExecutionContext)executionContext
+		BuildSettings buildSettings = initializeBuildSettings(ec)
+		URLClassLoader classLoader = initializeClassLoader(buildSettings)
+		initializeLogging ec.grailsHome, classLoader
 
-        tomcatRunner = createTomcatRunner(buildSettings, ec, classLoader)
-        if (ec.securePort > 0) {
-            tomcatRunner.startSecure(ec.host, ec.port, ec.securePort)
-        } else {
-            tomcatRunner.start(ec.host, ec.port)
-        }
+		tomcatRunner = createTomcatRunner(buildSettings, ec, classLoader)
+		if (ec.securePort > 0) {
+			tomcatRunner.startSecure ec.host, ec.port, ec.securePort
+		}
+		else {
+			tomcatRunner.start ec.host, ec.port
+		}
 
-        setupReloading(classLoader, buildSettings)
-    }
+		setupReloading classLoader, buildSettings
+	}
 
-    @Override
-    protected void discoverAndSetAgent(ExecutionContext executionContext) {
-        TomcatExecutionContext tec = (TomcatExecutionContext)executionContext
-        // no agent for war mode
-        if (!tec.warPath) {
-            super.discoverAndSetAgent(executionContext)
-        }
-    }
+	@Override
+	protected void discoverAndSetAgent(ExecutionContext executionContext) {
+		// no agent for war mode
+		if (!((TomcatExecutionContext)executionContext).warPath) {
+			super.discoverAndSetAgent executionContext
+		}
+	}
 
-    @CompileStatic
-    protected EmbeddableServer createTomcatRunner(BuildSettings buildSettings, TomcatExecutionContext ec, URLClassLoader classLoader) {
-        if (ec.warPath) {
-            if (Environment.isFork()) {
-                BuildSettings.initialiseDefaultLog4j(classLoader)
-            }
+	protected EmbeddableServer createTomcatRunner(BuildSettings buildSettings, TomcatExecutionContext ec, URLClassLoader classLoader) {
+		if (ec.warPath) {
+			if (Environment.isFork()) {
+				BuildSettings.initialiseDefaultLog4j classLoader
+			}
 
-            new TomcatWarRunner(ec.warPath, ec.contextPath)
-        }
-        else {
-            def runner = new TomcatDevelopmentRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
-            runner.grailsConfig = buildSettings.config
-            return runner
-        }
-    }
+			return new TomcatWarRunner(ec.warPath, ec.contextPath)
+		}
 
-    @CompileStatic
-    void start(String host, int port) {
-        startSecure(host, port, 0)
-    }
+		new TomcatDevelopmentRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
+	}
 
-    @CompileStatic
-    void startSecure(String host, int httpPort, int httpsPort) {
-        final ec = (TomcatExecutionContext)executionContext
-        ec.host = host
-        ec.port = httpPort
-        ec.securePort = httpsPort
-        def t = new Thread( {
-            final process = fork()
-            Runtime.addShutdownHook {
-                try {
-                    process.destroy()
-                } catch (e) {
-                    // ignore, nothing we can do
-                }
-            }
-        } )
+	void start(String host, int port) {
+		startSecure host, port, 0
+	}
 
-        t.start()
-        waitForStartup(host, httpPort)
-        System.setProperty(TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true")
-    }
+	void startSecure(String host, int httpPort, int httpsPort) {
+		final ec = (TomcatExecutionContext)executionContext
+		ec.host = host
+		ec.port = httpPort
+		ec.securePort = httpsPort
+		def t = new Thread({
+			final process = fork()
+			Runtime.addShutdownHook {
+				try {
+					process.destroy()
+				}
+				catch (e) {
+					// ignore, nothing we can do
+				}
+			}
+		})
 
-    @CompileStatic
-    void waitForStartup(String host, int port) {
-        while(!isAvailable(host, port)) {
-            sleep 100
-        }
-        try {
-            new URL("http://${host ?: 'localhost'}:${port ?: 8080}/is-tomcat-running").text
-        } catch(e) {
-            // ignore
-        }
-    }
+		t.start()
 
-    @CompileStatic
-    boolean isAvailable(String host, int port) {
-        try {
-            new Socket(host, port)
-            return true
-        } catch (e) {
-            return false
-        }
-    }
+		while(!isAvailable(host, httpPort)) {
+			sleep 100
+		}
+		System.setProperty TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true"
+	}
 
-    void stop() {
-        final ec = (TomcatExecutionContext)executionContext
-        try {
-            new URL("http://${ec?.host ?: 'localhost'}:${(ec?.port ?: 8080 )  + 1}").text
-        } catch(e) {
-            // ignore
-        }
-    }
+	boolean isAvailable(String host, int port) {
+		try {
+			new Socket(host ?: 'localhost', port)
+			return true
+		}
+		catch (e) {
+			return false
+		}
+	}
 
-    @CompileStatic
-    @Override
-    Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
-        Set<File> jars = []
-        jars.addAll super.findSystemClasspathJars(buildSettings)
-        jars.addAll buildSettings.buildDependencies.findAll { File it -> it.name.startsWith("ecj") ||  it.name.contains("commons-dbcp-")  || it.name.contains("commons-pool-") } 
+	void stop() {
+		final ec = (TomcatExecutionContext)executionContext
+		try { new URL("http://${ec?.host ?: 'localhost'}:${(ec?.port ?: 8080 ) + 1}").text }
+		catch(ignored) {}
+	}
 
-        GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForName('tomcat')
-        String jarName = "grails-plugin-tomcat-${info.version}.jar"
-        File jar = info.descriptor.file.parentFile.listFiles().find { File f -> f.name.equals(jarName) }
+	@Override
+	Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
+		Set<File> jars = []
+		jars.addAll super.findSystemClasspathJars(buildSettings)
 
-        if (jar?.exists()) {
-            jars << jar
-        }
-        else {
-            CONSOLE.error "Tomcat plugin classes JAR $jarName not found"
-        }
+		GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForName('tomcat8')
+		String jarName = "grails-plugin-tomcat8-${info.version}.jar"
+		File jar = info.descriptor.file.parentFile.listFiles().find { File f -> f.name.equals(jarName) }
 
-        jars
-    }
+		if (jar?.exists()) {
+			jars << jar
+		}
+		else {
+			CONSOLE.error "Tomcat plugin classes JAR $jarName not found"
+		}
 
-    static void startKillSwitch(final Tomcat tomcat, final int serverPort) {
-        new Thread(new TomcatKillSwitch(tomcat, serverPort)).start()
-    }
+		jars
+	}
 
-    void restart() {
-        stop()
-        start()
-    }
+	static void startKillSwitch(final Tomcat tomcat, final int serverPort) {
+		new Thread(new TomcatKillSwitch(tomcat, serverPort)).start()
+	}
 
-    void start() {
-        start(null, null)
-    }
+	void restart() {
+		stop()
+		start()
+	}
 
-    void start(int port) {
-        start(null, port)
-    }
+	void start() {
+		start null, null
+	}
 
-    void startSecure() {
-        startSecure(null)
-    }
+	void start(int port) {
+		start null, port
+	}
 
-    void startSecure(int port) {
-        startSecure(null, null, port)
-    }
+	void startSecure() {
+		tomcatRunner.startSecure null
+	}
+
+	void startSecure(int port) {
+		tomcatRunner.startSecure null, null, port
+	}
 }

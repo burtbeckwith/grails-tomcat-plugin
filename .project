@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>tomcat</name>
+	<name>grails-tomcat8</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -26,7 +26,7 @@
 		<link>
 			<name>.link_to_grails_plugins</name>
 			<type>2</type>
-			<locationURI>GRAILS_ROOT/grails-tomcat-plugin/target/plugins</locationURI>
+			<location>/home/burt/workspace.grails/plugins/grails-tomcat8-plugin/target/plugins</location>
 		</link>
 	</linkedResources>
 </projectDescription>
