@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-class Tomcat8GrailsPlugin {
+class TomcatGrailsPlugin {
 	def version = '8.0.5.1-SNAPSHOT'
 	def grailsVersion = '2.3 > *'
 	def scopes = [excludes: 'war']

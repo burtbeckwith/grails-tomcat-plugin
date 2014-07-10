@@ -8,7 +8,7 @@ eventCreatePluginArchiveStart = { stagingDir ->
 		return
 	}
 
-	ant.jar(destfile: "$stagingDir/grails-plugin-tomcat8-${plugin.version}.jar", filesonly: true) {
+	ant.jar(destfile: "$stagingDir/grails-plugin-tomcat-${plugin.version}.jar", filesonly: true) {
 		fileset(dir: classesDir, includes: 'org/grails/plugins/tomcat/**/*.class')
 	}
 }
