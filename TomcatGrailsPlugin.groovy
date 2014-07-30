@@ -21,10 +21,11 @@ class TomcatGrailsPlugin {
 	def documentation = 'http://grails.org/plugin/tomcat8'
 
 	def license = 'APACHE'
-	def organization = [name: 'SpringSource', url: 'http://www.springsource.org/']
+	def organization = [name: 'Pivotal', url: 'http://www.pivotal.io/oss/']
 	def developers = [
+        [name: 'Graeme Rocher', email: 'grocher@pivotal.io'],
 		[name: 'Burt Beckwith', email: 'burt@burtbeckwith.com']
 	]
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPTOMCAT']
-	def scm = [url: 'https://github.com/grails-plugins/grails-tomcat8-plugin']
+	def scm = [url: 'https://github.com/grails-plugins/grails-tomcat-plugin']
 }
