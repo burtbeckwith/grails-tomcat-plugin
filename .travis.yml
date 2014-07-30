@@ -1,5 +1,6 @@
 language: groovy
 jdk:
+- openjdk7
 - oraclejdk7
 before_script:
 - rm -rf target
@@ -8,6 +9,6 @@ env:
   global:
   - GIT_NAME="Graeme Rocher"
   - GIT_EMAIL="graeme.rocher@gmail.com"  
-  - secure: mbckzNa2aByQxt+LHvx4SRVC8SuvpA2wOlpCsGJC8t9YqGOsMs34i2dZtk5a/xgGSnjB5NFvkP67OICgZ9e9QeyOGWTkhfQ4c1p2l7PFoTQJtWMYxWE8QCgEPjwKfmcKDpGJ1/89Rq4u6IotUTycJgb42W3NTMLizBu6jviN/cw=
-  - secure: IEEeUlGb/57GafdpbamRCnk+US2/q4hsxG4gGOH9LZKa0/wbUXMbpcyH+2KvuiFLD68ID4331Nz7LNGOb4ohuo+PpLP6zzJGLKKDDUbNMZIcGwRns/yyIyONYiYPInGrI/gyxMYBSM99X/YInw+rvgQ0jTrsrMOledYtMbL+r3c=
-  - secure: tVyK3E6xOs0S9oI5QPj7eNlWTHwhqBRcY/io3Enb+VSGMMrpZA+X6igm8IvLIYY+VDDQHoqVcJU1JyStoskthxSsRDv3vB9SaNDfLh36ifjscKffZOGC9WiHSSPaqJYxEbZq1CTVgZM654VuaFgSWqXYmpBHZmNwRulDQjAlNOA=
+  - secure: yiVfOcJ1oUYEbCXIusQCmG4rur1WCRT0OoOkx1jtoBmefcU40KabcwKfRjSUZAM7IbmIeulKE11Huag0+cUV+YWbAL6/ECRTaoyXcemgMnQxKlyRK22ThYdpqJpT0Ka1kfUCB/7ZgGFHHngJzhv53OWK9Ju6oDN+polUZ5D4J+Y=
+  - secure: Y88PcdoTHDj56wBJfQGktiglJniRoJRO3+uTIh6YRLDrLBbnK2dRVoP2nrd3nIble1/NRi38rqDpTc7zPAiGqdG+cjkO4tYRr+hkbNeBZSBPr/IGztkjEfPsraePyw5tssEYGqcy7jgTscIDDGqu0HO60FuLjU09yWsJ8dLabgc=
+  - secure: r46Z9xpU7ltmzoA15PuOViqfUNOKLElr8n28rd3eV0ngEGDiHV6pPETa3kk+wbsC4BivBKy9UPEtS2+6BuNMxM3YV9ExgqJcL5eDpkNnK80oRp7fJgkCR8LuLbxZJ2dPE5MevEUdDwTySpWQLwCwJQh5C9LB/Qt3ECDeWh2/NHg=

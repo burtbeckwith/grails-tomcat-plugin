@@ -1,6 +1,8 @@
-[![Build Status](https://travis-ci.org/grails-plugins/grails-tomcat-plugin.svg)](https://travis-ci.org/grails-plugins/grails-tomcat-plugin)
+[![Build Status](https://travis-ci.org/grails-plugins/grails-tomcat-plugin.svg?branch=master)](https://travis-ci.org/grails-plugins/grails-tomcat-plugin)
 
-Grails Tomcat 7 Plugin
-======================
+Tomcat Grails Plugin
+====================
 
-This plugin makes Tomcat 7 the default container for Grails.
+Adds support for Tomcat and Servlet API to a Grails application.
+
+Requires [cache](http://grails.org/plugin/cache) plugin 1.1.6 or above.

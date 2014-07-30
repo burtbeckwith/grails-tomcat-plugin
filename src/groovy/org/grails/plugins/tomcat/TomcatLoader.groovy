@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2011-2013 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,88 +15,62 @@
  */
 package org.grails.plugins.tomcat
 
+import groovy.transform.CompileStatic
+
 import java.beans.PropertyChangeListener
 
-import org.apache.catalina.Container
+import org.apache.catalina.Context
 import org.apache.catalina.Lifecycle
 import org.apache.catalina.LifecycleState
 import org.apache.catalina.Loader
 import org.apache.catalina.util.LifecycleBase
-import org.apache.commons.logging.Log
-import org.apache.commons.logging.LogFactory
-import org.apache.naming.resources.DirContextURLStreamHandler
-import org.apache.naming.resources.DirContextURLStreamHandlerFactory
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
- * A loader instance used for the embedded version of Tomcat 7.
+ * A loader instance used for the embedded version of Tomcat 8.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class TomcatLoader extends LifecycleBase implements Loader {
 
-    private static Log log = LogFactory.getLog(TomcatLoader.name)
+	protected Logger log = LoggerFactory.getLogger(getClass())
 
-    private static boolean first = true
+	ClassLoader classLoader
+	Context context
+	boolean delegate
+	boolean reloadable
 
-    ClassLoader classLoader
-    Container container
-    boolean delegate
-    boolean reloadable
+	TomcatLoader(ClassLoader cl) {
+		// Class loader that only searches the parent
+		classLoader = new ParentDelegatingClassLoader(cl)
+	}
 
-    TomcatLoader(ClassLoader classLoader) {
-        // Class loader that only searches the parent
-        this.classLoader = new ParentDelegatingClassLoader(classLoader)
-    }
+	@Override
+	protected void initInternal() {}
 
-    void addPropertyChangeListener(PropertyChangeListener listener) {}
+	@Override
+	protected void destroyInternal() {
+		classLoader = null
+	}
 
-    void addRepository(String repository) {
-        log.warn "Call to addRepository($repository) was ignored."
-    }
+	@Override
+	protected void startInternal() {
+		fireLifecycleEvent Lifecycle.START_EVENT, this
+		setState LifecycleState.STARTING
+	}
 
-    void backgroundProcess() {}
+	@Override
+	protected void stopInternal() {
+		fireLifecycleEvent Lifecycle.STOP_EVENT, this
+		setState LifecycleState.STOPPING
+	}
 
-    String[] findRepositories() {
-        log.warn "Call to findRepositories() returned null."
-    }
-
-    String getInfo() { "MyLoader/1.0" }
-
-    boolean modified() { false }
-
-    void removePropertyChangeListener(PropertyChangeListener listener) {}
-
-    @Override protected void initInternal() {
-        URLStreamHandlerFactory streamHandlerFactory = new DirContextURLStreamHandlerFactory()
-
-        if (first) {
-            first = false
-            try {
-                URL.setURLStreamHandlerFactory(streamHandlerFactory)
-            } catch (Exception e) {
-                // Log and continue anyway, this is not critical
-                log.error("Error registering jndi stream handler", e)
-            } catch (Throwable t) {
-                // This is likely a dual registration
-                log.info("Dual registration of jndi stream handler: " + t.getMessage())
-            }
-        }
-
-        DirContextURLStreamHandler.bind(classLoader, container.getResources())
-    }
-
-    @Override protected void destroyInternal() {
-        classLoader = null
-    }
-
-    @Override protected void startInternal() {
-        fireLifecycleEvent(Lifecycle.START_EVENT, this)
-        setState(LifecycleState.STARTING)
-    }
-
-    @Override protected void stopInternal() {
-        fireLifecycleEvent(Lifecycle.STOP_EVENT, this)
-        setState(LifecycleState.STOPPING)
-    }
+	void addPropertyChangeListener(PropertyChangeListener listener) {}
+	void removePropertyChangeListener(PropertyChangeListener listener) {}
+	void addRepository(String repository) {}
+	void backgroundProcess() {}
+	boolean modified() { false }
 }

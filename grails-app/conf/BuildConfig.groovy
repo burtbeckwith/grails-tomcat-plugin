@@ -3,45 +3,47 @@ if(System.getenv('TRAVIS_BRANCH')) {
     grails.project.repos.grailsCentral.password = System.getenv("GRAILS_CENTRAL_PASSWORD")    
 }
 
+grails.project.work.dir = 'target'
+
 grails.project.dependency.resolver = "maven"
-grails.project.work.dir="target/work"
+
 grails.project.dependency.resolution = {
 
-    inherits "global"
-    log "warn"
+	inherits 'global'
+	log 'warn'
 
-    repositories {
-        grailsCentral()
-        mavenLocal()
-        mavenCentral()
-    }
+	repositories {
+		grailsCentral()
+		mavenLocal()
+		mavenCentral()
+	}
 
-    dependencies {
+	dependencies {
+		String tomcatVersion = '8.0.5'
 
-        String tomcatVersion = "7.0.53"
+//		build "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion"
 
-        runtime("org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion") {
-            excludes 'org.apache.tomcat:tomcat-catalina', 'org.apache.tomcat:tomcat-coyote'
-        }
-        compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion", {
-            excludes 'org.apache.tomcat.embed:tomcat-embed-logging-juli', 'org.apache.tomcat.embed:tomcat-embed-logging-log4j'
-        }
-        runtime "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion", {
-            excludes 'org.eclipse.jdt.core.compiler:ecj', 'org.apache.tomcat.embed:tomcat-embed-core'
-        }
-        runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
-        runtime "org.apache.tomcat.embed:tomcat-embed-websocket:$tomcatVersion"
+		compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
 
-        // needed for JSP compilation
-        runtime "org.eclipse.jdt.core.compiler:ecj:3.7.2"
+		runtime "org.apache.tomcat.embed:tomcat-embed-el:$tomcatVersion"
 
-        // needed for JNDI
-        optional 'commons-dbcp:commons-dbcp:1.4'
-    }
+		runtime "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"
 
-    plugins {
-        build(':release:3.0.1', ':rest-client-builder:2.0.1') {
-            export = false
-        }
-    }
+		runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
+
+		runtime "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatVersion"
+
+		runtime "org.apache.tomcat.embed:tomcat-embed-websocket:$tomcatVersion"
+
+		compile 'javax.servlet:javax.servlet-api:3.1.0'
+
+		// needed for JSP compilation
+		runtime 'org.eclipse.jdt.core.compiler:ecj:4.2.2'
+	}
+
+	plugins {
+		build ':release:3.0.1', ':rest-client-builder:1.0.3', {
+			export = false
+		}
+	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 SpringSource
+ * Copyright 2011-2013 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,43 +20,45 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
- * A class loader that searches the parent
+ * A class loader that searches the parent.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
-public class ParentDelegatingClassLoader extends ClassLoader{
+public class ParentDelegatingClassLoader extends ClassLoader {
 
-    private Method findClassMethod;
+	protected Method findClassMethod;
 
-    protected ParentDelegatingClassLoader(ClassLoader parent) {
-        super(parent);
-        findClassMethod = findMethod(ClassLoader.class,"findClass", String.class);
-        findClassMethod.setAccessible(true);
-    }
+	protected ParentDelegatingClassLoader(ClassLoader parent) {
+		super(parent);
+		findClassMethod = findMethod(ClassLoader.class, "findClass", String.class);
+		findClassMethod.setAccessible(true);
+	}
 
-    private Method findMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
-        Class<?> searchType = clazz;
-        while (searchType != null) {
-            Method[] methods = (searchType.isInterface() ? searchType.getMethods() : searchType.getDeclaredMethods());
-            for (Method method : methods) {
-                if (name.equals(method.getName())
-                        && (paramTypes == null || Arrays.equals(paramTypes, method.getParameterTypes()))) {
-                    return method;
-                }
-            }
-            searchType = searchType.getSuperclass();
-        }
-        return null;
-    }
-    @Override
-    protected Class<?> findClass(String className) throws ClassNotFoundException {
-        try {
-            return (Class<?>) findClassMethod.invoke(getParent(), className);
-        } catch (IllegalAccessException e) {
-            throw new ClassNotFoundException(className);
-        } catch (InvocationTargetException e) {
-            throw new ClassNotFoundException(className);
-        }
-    }
+	protected Method findMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
+		Class<?> searchType = clazz;
+		while (searchType != null) {
+			Method[] methods = (searchType.isInterface() ? searchType.getMethods() : searchType.getDeclaredMethods());
+			for (Method method : methods) {
+				if (name.equals(method.getName()) && (paramTypes == null || Arrays.equals(paramTypes, method.getParameterTypes()))) {
+					return method;
+				}
+			}
+			searchType = searchType.getSuperclass();
+		}
+		return null;
+	}
+
+	@Override
+	protected Class<?> findClass(String className) throws ClassNotFoundException {
+		try {
+			return (Class<?>) findClassMethod.invoke(getParent(), className);
+		}
+		catch (IllegalAccessException e) {
+			throw new ClassNotFoundException(className);
+		}
+		catch (InvocationTargetException e) {
+			throw new ClassNotFoundException(className);
+		}
+	}
 }
