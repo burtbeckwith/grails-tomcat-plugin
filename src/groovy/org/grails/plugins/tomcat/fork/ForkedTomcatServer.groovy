@@ -20,14 +20,19 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import grails.web.container.EmbeddableServer
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 
 import org.apache.catalina.startup.Tomcat
-import org.codehaus.groovy.grails.cli.fork.ExecutionContext
-import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
+import org.codehaus.groovy.grails.cli.fork.*
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.grails.plugins.tomcat.TomcatKillSwitch
 
+import grails.util.PluginBuildSettings
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
+import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.plugins.tomcat.TomcatServer
 /**
  * An implementation of the Tomcat server that runs in forked mode.
  *
@@ -95,18 +100,60 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     @CompileStatic
     protected EmbeddableServer createTomcatRunner(BuildSettings buildSettings, TomcatExecutionContext ec, URLClassLoader classLoader) {
+        def binding = createExecutionContext(buildSettings, GrailsPluginUtils.getPluginBuildSettings(buildSettings))
+        def eventListener = createEventListener(binding)
+
+        TomcatServer runner 
         if (ec.warPath) {
             if (Environment.isFork()) {
                 BuildSettings.initialiseDefaultLog4j(classLoader)
             }
 
-            new TomcatWarRunner(ec.warPath, ec.contextPath)
+            runner = new TomcatWarRunner(ec.warPath, ec.contextPath)
         }
         else {
-            def runner = new TomcatDevelopmentRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
-            runner.grailsConfig = buildSettings.config
-            return runner
+            runner = new TomcatDevelopmentRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
+            runner.grailsConfig = buildSettings.config            
         }
+
+        runner.eventListener = eventListener
+        return runner
+    }
+
+    @CompileStatic
+    protected Binding createExecutionContext(BuildSettings buildSettings, PluginBuildSettings pluginSettings) {
+        final scriptBinding = new Binding()
+        ScriptBindingInitializer.initBinding(scriptBinding, buildSettings, (URLClassLoader) forkedClassLoader, GrailsConsole.getInstance(), false)
+        scriptBinding.setVariable('includeTargets', new IncludeTargets(forkedClassLoader,scriptBinding))
+        scriptBinding.setVariable("pluginSettings", pluginSettings)
+        scriptBinding.setVariable("target") { Map<String, String> arguments, Closure task ->
+            scriptBinding.setVariable(arguments.name, task)
+        }
+        scriptBinding.setVariable(ScriptBindingInitializer.GRAILS_SETTINGS, buildSettings)
+        scriptBinding.setVariable(ScriptBindingInitializer.ARGS_MAP, executionContext.argsMap)
+        scriptBinding
+    }    
+
+    @CompileStatic
+    protected GrailsBuildEventListener createEventListener(Binding executionContext) {
+        GrailsBuildEventListener eventListener = (GrailsBuildEventListener) executionContext.getVariable("eventListener")
+        GrailsConsole grailsConsole = GrailsConsole.getInstance()
+        eventListener.globalEventHooks = [
+            StatusFinal:  [ {message -> grailsConsole.addStatus message.toString() } ],
+            StatusUpdate: [ {message -> grailsConsole.updateStatus message.toString() } ],
+            StatusError:  [ {message -> grailsConsole.error message.toString() } ]
+        ]
+
+        eventListener.initialize()
+        addEventHookToBinding(executionContext, eventListener)
+        eventListener
+    }    
+
+    @CompileStatic(TypeCheckingMode.SKIP)
+    private void addEventHookToBinding(Binding executionContext, eventListener) {
+        executionContext.setVariable("event", { String name, List args ->
+            eventListener.triggerEvent(name, * args)
+        })
     }
 
     @CompileStatic
