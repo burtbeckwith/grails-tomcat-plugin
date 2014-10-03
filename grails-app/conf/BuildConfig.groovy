@@ -18,7 +18,7 @@ grails.project.dependency.resolution = {
 	}
 
 	dependencies {
-		String tomcatVersion = '8.0.5'
+		String tomcatVersion = '8.0.14'
 
 //		build "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion"
 
