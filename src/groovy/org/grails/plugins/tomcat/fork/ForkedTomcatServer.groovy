@@ -105,7 +105,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         def binding = createExecutionContext(buildSettings, GrailsPluginUtils.getPluginBuildSettings(buildSettings))
         def eventListener = createEventListener(binding)
 
-        TomcatServer runner 
+        TomcatServer runner
         if (ec.warPath) {
             if (Environment.isFork()) {
                 BuildSettings.initialiseDefaultLog4j(classLoader)
@@ -115,7 +115,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         }
         else {
             runner = new TomcatDevelopmentRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
-            runner.grailsConfig = buildSettings.config            
+            runner.grailsConfig = buildSettings.config
         }
 
         runner.eventListener = eventListener
@@ -134,7 +134,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         scriptBinding.setVariable(ScriptBindingInitializer.GRAILS_SETTINGS, buildSettings)
         scriptBinding.setVariable(ScriptBindingInitializer.ARGS_MAP, executionContext.argsMap)
         scriptBinding
-    }    
+    }
 
     @CompileStatic
     protected GrailsBuildEventListener createEventListener(Binding executionContext) {
@@ -149,7 +149,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         eventListener.initialize()
         addEventHookToBinding(executionContext, eventListener)
         eventListener
-    }    
+    }
 
     @CompileStatic(TypeCheckingMode.SKIP)
     private void addEventHookToBinding(Binding executionContext, eventListener) {
@@ -221,7 +221,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
         Set<File> jars = []
         jars.addAll super.findSystemClasspathJars(buildSettings)
-        jars.addAll buildSettings.buildDependencies.findAll { File it -> it.name.startsWith("ecj") ||  it.name.contains("commons-dbcp-")  || it.name.contains("commons-pool-") } 
+        jars.addAll buildSettings.buildDependencies.findAll { File it -> it.name.startsWith("ecj") ||  it.name.contains("commons-dbcp-")  || it.name.contains("commons-pool-") }
 
         GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForName('tomcat')
         String jarName = "grails-plugin-tomcat-${info.version}.jar"

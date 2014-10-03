@@ -16,14 +16,13 @@ class TomcatGrailsPlugin {
 	def version = '8.0.5.1-SNAPSHOT'
 	def grailsVersion = '2.3 > *'
 	def scopes = [excludes: 'war']
-	def title = 'Apache Tomcat 8 plugin'
+	def title = 'Apache Tomcat plugin'
 	def description = 'Makes Tomcat 8.x the servlet container for Grails at development time'
-	def documentation = 'http://grails.org/plugin/tomcat8'
-
+	def documentation = 'http://grails.org/plugin/tomcat'
 	def license = 'APACHE'
 	def organization = [name: 'Pivotal', url: 'http://www.pivotal.io/oss/']
 	def developers = [
-        [name: 'Graeme Rocher', email: 'grocher@pivotal.io'],
+		[name: 'Graeme Rocher', email: 'grocher@pivotal.io'],
 		[name: 'Burt Beckwith', email: 'burt@burtbeckwith.com']
 	]
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPTOMCAT']

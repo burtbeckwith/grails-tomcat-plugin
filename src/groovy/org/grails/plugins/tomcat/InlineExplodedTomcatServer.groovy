@@ -98,7 +98,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 			resources.createWebResourceSet WebResourceRoot.ResourceSetType.POST, alias, realPathUrl, '/'
 		}
 	}
-	
+
 	protected Loader createTomcatLoader(ClassLoader classLoader) {
 		new TomcatLoader(classLoader)
 	}
