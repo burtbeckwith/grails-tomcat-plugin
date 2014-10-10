@@ -1,5 +1,8 @@
+/.settings
+/target
+/web-app
+*.swp
+*.log
+grails-tomcat-*.zip
+grails-tomcat-*.zip.sha1
 plugin.xml
-target
-web-app
-*.zip
-
