@@ -4,7 +4,7 @@ eventGenerateWebXmlEnd = {
 }
 
 eventCreatePluginArchiveStart = { stagingDir ->
-	if (plugin.name != 'tomcat8') {
+	if (plugin.name != 'tomcat') {
 		return
 	}
 
