@@ -18,9 +18,7 @@ grails.project.dependency.resolution = {
 	}
 
 	dependencies {
-		String tomcatVersion = '8.0.14'
-
-//		build "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion"
+		String tomcatVersion = '8.0.15'
 
 		compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
 
@@ -37,7 +35,7 @@ grails.project.dependency.resolution = {
 		compile 'javax.servlet:javax.servlet-api:3.1.0'
 
 		// needed for JSP compilation
-		runtime 'org.eclipse.jdt.core.compiler:ecj:4.2.2'
+		runtime 'org.eclipse.jdt.core.compiler:ecj:4.4'
 	}
 
 	plugins {
