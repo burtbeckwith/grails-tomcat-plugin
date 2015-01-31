@@ -18,7 +18,7 @@ grails.project.dependency.resolution = {
 	}
 
 	dependencies {
-		String tomcatVersion = '8.0.15'
+		String tomcatVersion = '8.0.18'
 
 		compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
 
