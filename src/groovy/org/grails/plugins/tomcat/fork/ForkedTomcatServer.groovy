@@ -18,21 +18,23 @@ package org.grails.plugins.tomcat.fork
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.Environment
+import grails.util.PluginBuildSettings
 import grails.web.container.EmbeddableServer
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import org.apache.catalina.startup.Tomcat
-import org.codehaus.groovy.grails.cli.fork.*
+import org.codehaus.groovy.grails.cli.fork.ExecutionContext
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
+import org.codehaus.groovy.grails.cli.fork.IncludeTargets
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
+import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.grails.plugins.tomcat.TomcatKillSwitch
-
-import grails.util.PluginBuildSettings
-import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.grails.plugins.tomcat.TomcatServer
+import org.springframework.util.Assert
+
 /**
  * An implementation of the Tomcat server that runs in forked mode.
  *
@@ -42,8 +44,8 @@ import org.grails.plugins.tomcat.TomcatServer
 // @CompileStatic
 class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer {
 
+    public static final GrailsConsole CONSOLE = GrailsConsole.instance
 
-    public static final GrailsConsole CONSOLE = GrailsConsole.getInstance()
     @Delegate EmbeddableServer tomcatRunner
 
     ForkedTomcatServer(TomcatExecutionContext executionContext) {
@@ -53,9 +55,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     private ForkedTomcatServer() {
         executionContext = (TomcatExecutionContext)readExecutionContext()
-        if (executionContext == null) {
-            throw new IllegalStateException("Forked server created without first creating execution context and calling fork()")
-        }
+        Assert.state executionContext != null, "Forked server created without first creating execution context and calling fork()"
     }
 
     static void main(String[] args) {
@@ -124,26 +124,23 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     @CompileStatic
     protected Binding createExecutionContext(BuildSettings buildSettings, PluginBuildSettings pluginSettings) {
-        final scriptBinding = new Binding()
-        ScriptBindingInitializer.initBinding(scriptBinding, buildSettings, (URLClassLoader) forkedClassLoader, GrailsConsole.getInstance(), false)
-        scriptBinding.setVariable('includeTargets', new IncludeTargets(forkedClassLoader,scriptBinding))
-        scriptBinding.setVariable("pluginSettings", pluginSettings)
-        scriptBinding.setVariable("target") { Map<String, String> arguments, Closure task ->
-            scriptBinding.setVariable(arguments.name, task)
-        }
-        scriptBinding.setVariable(ScriptBindingInitializer.GRAILS_SETTINGS, buildSettings)
-        scriptBinding.setVariable(ScriptBindingInitializer.ARGS_MAP, executionContext.argsMap)
-        scriptBinding
+        final binding = new Binding()
+        ScriptBindingInitializer.initBinding(binding, buildSettings, (URLClassLoader) forkedClassLoader, CONSOLE, false)
+        binding.setVariable('includeTargets', new IncludeTargets(forkedClassLoader, binding))
+        binding.setVariable("pluginSettings", pluginSettings)
+        binding.setVariable("target") { Map<String, String> arguments, Closure task -> binding.setVariable arguments.name, task }
+        binding.setVariable(ScriptBindingInitializer.GRAILS_SETTINGS, buildSettings)
+        binding.setVariable(ScriptBindingInitializer.ARGS_MAP, executionContext.argsMap)
+        binding
     }
 
     @CompileStatic
     protected GrailsBuildEventListener createEventListener(Binding executionContext) {
         GrailsBuildEventListener eventListener = (GrailsBuildEventListener) executionContext.getVariable("eventListener")
-        GrailsConsole grailsConsole = GrailsConsole.getInstance()
         eventListener.globalEventHooks = [
-            StatusFinal:  [ {message -> grailsConsole.addStatus message.toString() } ],
-            StatusUpdate: [ {message -> grailsConsole.updateStatus message.toString() } ],
-            StatusError:  [ {message -> grailsConsole.error message.toString() } ]
+            StatusFinal:  [{ message -> CONSOLE.addStatus message.toString() }],
+            StatusUpdate: [{ message -> CONSOLE.updateStatus message.toString() }],
+            StatusError:  [{ message -> CONSOLE.error message.toString() }]
         ]
 
         eventListener.initialize()
@@ -169,18 +166,16 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         ec.host = host
         ec.port = httpPort
         ec.securePort = httpsPort
-        def t = new Thread( {
+        new Thread({
             final process = fork()
             Runtime.addShutdownHook {
                 try {
                     process.destroy()
-                } catch (e) {
+                } catch (ignored) {
                     // ignore, nothing we can do
                 }
             }
-        } )
-
-        t.start()
+        }).start()
         waitForStartup(host, httpPort)
         System.setProperty(TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true")
     }
@@ -192,7 +187,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         }
         try {
             new URL("http://${host ?: 'localhost'}:${port ?: 8080}/is-tomcat-running").text
-        } catch(e) {
+        } catch(ignored) {
             // ignore
         }
     }
@@ -211,7 +206,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         final ec = (TomcatExecutionContext)executionContext
         try {
             new URL("http://${ec?.host ?: 'localhost'}:${(ec?.port ?: 8080 )  + 1}").text
-        } catch(e) {
+        } catch(ignored) {
             // ignore
         }
     }
@@ -221,11 +216,13 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
         Set<File> jars = []
         jars.addAll super.findSystemClasspathJars(buildSettings)
-        jars.addAll buildSettings.buildDependencies.findAll { File it -> it.name.startsWith("ecj") ||  it.name.contains("commons-dbcp-")  || it.name.contains("commons-pool-") }
-
-        GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForName('tomcat')
+        jars.addAll buildSettings.buildDependencies.findAll {
+            it.name.startsWith("ecj") ||
+            it.name.contains("commons-dbcp-") ||
+            it.name.contains("commons-pool-") }
+        GrailsPluginInfo info = GrailsPluginUtils.pluginBuildSettings.getPluginInfoForName('tomcat')
         String jarName = "grails-plugin-tomcat-${info.version}.jar"
-        File jar = info.descriptor.file.parentFile.listFiles().find { File f -> f.name.equals(jarName) }
+        File jar = info.descriptor.file.parentFile.listFiles().find { it.name == jarName }
 
         if (jar?.exists()) {
             jars << jar
