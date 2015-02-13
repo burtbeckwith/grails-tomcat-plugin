@@ -210,13 +210,13 @@ abstract class TomcatServer implements EmbeddableServer {
 			Class.forName 'sun.security.tools.KeyTool.Main'
 		}
 		catch (ClassNotFoundException e1) {
-      try {
-        Class.forName 'sun.security.tools.KeyTool'
-      }
-      catch (ClassNotFoundException e2) {
-        // no try/catch for this one, if neither is found let it fail
-        Class.forName 'com.ibm.crypto.tools.KeyTool'
-      }
-    }
+			try {
+				Class.forName 'sun.security.tools.KeyTool'
+			}
+			catch (ClassNotFoundException e2) {
+				// no try/catch for this one, if neither is found let it fail
+				Class.forName 'com.ibm.crypto.tools.KeyTool'
+			}
+		}
 	}
 }
