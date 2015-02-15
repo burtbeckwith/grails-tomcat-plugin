@@ -33,7 +33,6 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.grails.plugins.tomcat.TomcatKillSwitch
 import org.grails.plugins.tomcat.TomcatServer
-import org.springframework.util.Assert
 
 /**
  * An implementation of the Tomcat server that runs in forked mode.
@@ -55,7 +54,9 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     private ForkedTomcatServer() {
         executionContext = (TomcatExecutionContext)readExecutionContext()
-        Assert.state executionContext != null, "Forked server created without first creating execution context and calling fork()"
+        if (executionContext == null) {
+            throw new IllegalStateException("Forked server created without first creating execution context and calling fork()")
+        }
     }
 
     static void main(String[] args) {
