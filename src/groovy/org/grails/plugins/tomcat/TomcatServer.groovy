@@ -207,10 +207,12 @@ abstract class TomcatServer implements EmbeddableServer {
 
 	protected getKeyToolClass() {
 		try {
-			Class.forName 'sun.security.tools.KeyTool.Main'
+			// Sun JDK 8
+			Class.forName 'sun.security.tools.keytool.Main'
 		}
 		catch (ClassNotFoundException e1) {
 			try {
+				// Sun pre-JDK 8
 				Class.forName 'sun.security.tools.KeyTool'
 			}
 			catch (ClassNotFoundException e2) {
