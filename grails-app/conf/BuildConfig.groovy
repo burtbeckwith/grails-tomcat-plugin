@@ -1,10 +1,10 @@
 if (System.getenv('TRAVIS_BRANCH')) {
-	grails.project.repos.grailsCentral.username = System.getenv("GRAILS_CENTRAL_USERNAME")
-	grails.project.repos.grailsCentral.password = System.getenv("GRAILS_CENTRAL_PASSWORD")
+	grails.project.repos.grailsCentral.username = System.getenv('GRAILS_CENTRAL_USERNAME')
+	grails.project.repos.grailsCentral.password = System.getenv('GRAILS_CENTRAL_PASSWORD')
 }
 
 grails.project.work.dir = 'target'
-grails.project.dependency.resolver = "maven"
+grails.project.dependency.resolver = 'maven'
 
 grails.project.dependency.resolution = {
 
@@ -18,7 +18,7 @@ grails.project.dependency.resolution = {
 	}
 
 	dependencies {
-		String tomcatVersion = '8.0.20'
+		String tomcatVersion = '8.0.21'
 
 		compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
 
