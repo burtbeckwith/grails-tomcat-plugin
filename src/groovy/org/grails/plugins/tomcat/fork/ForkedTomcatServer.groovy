@@ -217,13 +217,14 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
         Set<File> jars = []
         jars.addAll super.findSystemClasspathJars(buildSettings)
-        jars.addAll buildSettings.buildDependencies.findAll {
-            it.name.startsWith("ecj") ||
-            it.name.contains("commons-dbcp-") ||
-            it.name.contains("commons-pool-") }
+        jars.addAll buildSettings.buildDependencies.findAll { File dep ->
+            dep.name.startsWith("ecj") ||
+            dep.name.contains("commons-dbcp-") ||
+            dep.name.contains("commons-pool-")
+        }
         GrailsPluginInfo info = GrailsPluginUtils.pluginBuildSettings.getPluginInfoForName('tomcat')
         String jarName = "grails-plugin-tomcat-${info.version}.jar"
-        File jar = info.descriptor.file.parentFile.listFiles().find { it.name == jarName }
+        File jar = info.descriptor.file.parentFile.listFiles().find { File f -> f.name == jarName }
 
         if (jar?.exists()) {
             jars << jar
