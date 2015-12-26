@@ -1,8 +1,10 @@
+*.log
+*.swp
+/.classpath
+/.project
 /.settings
+/grails-tomcat-*.zip
+/grails-tomcat-*.zip.sha1
+/plugin.xml
 /target
 /web-app
-*.swp
-*.log
-grails-tomcat-*.zip
-grails-tomcat-*.zip.sha1
-plugin.xml
