@@ -1,4 +1,5 @@
-/* Copyright 2013-2015 SpringSource.
+/*
+ * Copyright 2013-2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -20,9 +21,9 @@ class TomcatGrailsPlugin {
 	def description = 'Makes Tomcat 8.x the servlet container for Grails at development time'
 	def documentation = 'http://grails.org/plugin/tomcat'
 	def license = 'APACHE'
-	def organization = [name: 'Pivotal', url: 'http://www.pivotal.io/oss/']
+	def organization = [name: 'Grails', url: 'http://www.grails.org']
 	def developers = [
-		[name: 'Graeme Rocher', email: 'grocher@pivotal.io'],
+		[name: 'Graeme Rocher', email: 'rocherg@ociweb.com'],
 		[name: 'Burt Beckwith', email: 'burt@burtbeckwith.com']
 	]
 	def issueManagement = [system: 'JIRA', url: 'http://jira.grails.org/browse/GPTOMCAT']
