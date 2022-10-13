@@ -1,5 +1,5 @@
 name: Run tests
-        uses: kobi-lemberg/github-maven-java@java8_maven3.6
+        
         with:
           command: clean install
           artifactory-release-username-variable: GITHUB_USERNAME
